@@ -23,6 +23,24 @@ struct ns16550 uart[UART_IP_NUM] = {
 		.en_irq_mode = false,
 		.irq_num = UART1_INTR_NUM,
 	},
+	{
+		.ip_owner = NS_IP_OWNER_SNPS,
+		.base = (void *)UART2_BASE,
+		.clk_freq = UART_CLK_FREQ,
+		.reg_shift = 0,
+		.time_out = 0,
+		.en_irq_mode = false,
+		.irq_num = UART2_INTR_NUM,
+	},
+	{
+		.ip_owner = NS_IP_OWNER_SNPS,
+		.base = (void *)UART3_BASE,
+		.clk_freq = UART_CLK_FREQ,
+		.reg_shift = 0,
+		.time_out = 0,
+		.en_irq_mode = false,
+		.irq_num = UART3_INTR_NUM,
+	},
 
 };
 

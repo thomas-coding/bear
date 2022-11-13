@@ -16,6 +16,7 @@ include_directories(./src-comm/common)
 include_directories(./src-comm/ips/ns16550)
 include_directories(./src-comm/board/ns16550)
 include_directories(./src-comm/cmsis)
+include_directories(./src-comm/ipstest)
 
 # Link target
 set(LD_SCRIPT "src-s/bm.lds")
@@ -40,6 +41,12 @@ set(SRC_LIST
     ${CMAKE_HOME_DIRECTORY}/src-comm/board/ns16550/board-ns16550.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/common/tiny_command.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ips/ns16550/ns16550.c
+    )
+
+# Test
+set(SRC_LIST
+    ${SRC_LIST}
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-ns16550.c
     )
 
 # Target

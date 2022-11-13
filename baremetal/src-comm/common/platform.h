@@ -12,7 +12,7 @@
 
 #include <common.h>
 
-#define CHIP_PLL_ENABLE		1
+#define CHIP_PLL_ENABLE		0
 
 /* Interrupt Number Definition */
 typedef enum IRQn
@@ -53,7 +53,7 @@ typedef enum IRQn
 #define LAS_TSC_CLK		(24576000)
 #define LAS_PDM_CLK		(3072000)
 #define LAS_I2S_CLK		(24576000)
-#define LAS_UART_CLK		(200 * Mhz)
+#define LAS_UART_CLK		(100 * Mhz)
 #define LAS_I2C_CLK		(200 * Mhz)
 #define LAS_SPI_CLK		(200 * Mhz)
 #define LAS_PWM_CLK		(200 * Mhz)
