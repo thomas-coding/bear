@@ -47,7 +47,6 @@ typedef enum IRQn
 /* Process stack size */
 #define SP_PROCESS_SIZE		0x200
 
-/* Alius Chip Sign Off Clock. Refer to Alius_Clock_Setting_1027.xlsx */
 #if CHIP_PLL_ENABLE
 #define LAS_M33_CLK		(400 * Mhz)
 #define LAS_M0P_CLK		(100 * Mhz)

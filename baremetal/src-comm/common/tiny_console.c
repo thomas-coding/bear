@@ -9,7 +9,7 @@
 
 #define CONFIG_SYS_CBSIZE		256 /* Three standard termial line */
 #define CONFIG_SYS_MAXARGS		8
-#define CONFIG_SYS_PROMPT		"Alius> "
+#define CONFIG_SYS_PROMPT		"Bear> "
 #define CONFIG_CMD_EDIT_SUPPORT
 
 static char console_buffer[CONFIG_SYS_CBSIZE + 1];
@@ -309,7 +309,7 @@ void tiny_uart_console(void)
 {
 	int len = 0, ret = 0;
 
-	tc_pr("\nWelcome to alius uart console\n");
+	tc_pr("\nWelcome to bear uart console\n");
 
 	while (1) {
 		len = readline(CONFIG_SYS_PROMPT);
