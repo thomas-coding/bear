@@ -4,7 +4,6 @@
 
 #include "platform.h"
 
-#define BLK_SWR0 (0x5006506c)
 #define BLK_SWR0_UART0_PRSTN (13)
 #define BLK_SWR0_UART0_SRSTN (14)
 #define BLK_SWR0_UART1_PRSTN (15)

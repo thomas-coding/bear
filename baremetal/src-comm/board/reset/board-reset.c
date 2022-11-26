@@ -4,15 +4,13 @@
 
 void board_reset_init(void)
 {
-	/* reset module */
-	*(volatile uint32_t *)(BLK_SWR0) &= ~((1 << BLK_SWR0_UART0_PRSTN) | (1 << BLK_SWR0_UART0_SRSTN) \
-					      | (1 << BLK_SWR0_UART1_PRSTN) | (1 << BLK_SWR0_UART1_SRSTN) \
-					      | (1 << BLK_SWR0_UART2_PRSTN) | (1 << BLK_SWR0_UART2_PRSTN) \
-					      | (1 << BLK_SWR0_UART3_PRSTN) | (1 << BLK_SWR0_UART4_SRSTN));
+	/* Reset all modules */
+	write_mreg32(SYSREG2_BLK_SWR0, 0x0);
+	write_mreg32(SYSREG2_BLK_SWR1, 0x0);
 
-	/* release module */
-	*(volatile uint32_t *)(BLK_SWR0) |= (1 << BLK_SWR0_UART0_PRSTN) | (1 << BLK_SWR0_UART0_SRSTN) \
-					    | (1 << BLK_SWR0_UART1_PRSTN) | (1 << BLK_SWR0_UART1_SRSTN) \
-					    | (1 << BLK_SWR0_UART2_PRSTN) | (1 << BLK_SWR0_UART2_PRSTN) \
-					    | (1 << BLK_SWR0_UART3_PRSTN) | (1 << BLK_SWR0_UART4_SRSTN);
+	mdelay(10);
+
+	/* Release all modules */
+	write_mreg32(SYSREG2_BLK_SWR0, 0xffffffff);
+	write_mreg32(SYSREG2_BLK_SWR1, 0xffffffff);
 }
