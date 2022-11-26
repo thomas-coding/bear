@@ -3,17 +3,29 @@
 #include "platform.h"
 #include "board-pinmux.h"
 
-void board_pinmux_init(void) {
+void board_pinmux_init(void)
+{
+	/* Config uart0 */
+	IOMUX->PAD_CTRL_b[BSP_IO_01_PIN_29].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_01_PIN_30].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_01_PIN_31].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_00].SYS_IOMUXC_SW_MUX = 4;
 
-	//pinmux uart0
-	*(volatile uint32_t *)(0x500000f4) = 0x00000220;
-	*(volatile uint32_t *)(0x500000f8) = 0x00000220;
-	*(volatile uint32_t *)(0x500000fc) = 0x00000220;
-	*(volatile uint32_t *)(0x50000100) = 0x00000220;
+	/* Config uart1 */
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_01].SYS_IOMUXC_SW_MUX = 5;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_02].SYS_IOMUXC_SW_MUX = 5;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_03].SYS_IOMUXC_SW_MUX = 5;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_04].SYS_IOMUXC_SW_MUX = 5;
 
-	//pinmux uart3
-	*(volatile uint32_t *)(0x50000120) = 0x00000320;
-	*(volatile uint32_t *)(0x50000124) = 0x00000320;
-	*(volatile uint32_t *)(0x50000128) = 0x00000320;
-	*(volatile uint32_t *)(0x50000130) = 0x00000320;
+	/* Config uart2 */
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_05].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_06].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_07].SYS_IOMUXC_SW_MUX = 4;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_08].SYS_IOMUXC_SW_MUX = 4;
+
+	/* Config uart3 */
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_09].SYS_IOMUXC_SW_MUX = 6;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_10].SYS_IOMUXC_SW_MUX = 6;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_11].SYS_IOMUXC_SW_MUX = 6;
+	IOMUX->PAD_CTRL_b[BSP_IO_02_PIN_12].SYS_IOMUXC_SW_MUX = 6;
 }

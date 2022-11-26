@@ -113,6 +113,8 @@ typedef enum IRQn {
 
 
 /* Bear map */
+#define IOMUX_BASE 0x50000000
+
 #define SYSREG0_BASE 0x50000c00
 #define SYSREG0_BLE_SYS_STOP (SYSREG0_BASE + 0x54)
 
