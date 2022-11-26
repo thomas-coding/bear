@@ -16,7 +16,7 @@
 #define UART_REG_NUM            12
 
 /* indicating the frequency of UART */
-#define UART_CLK_FREQ           LAS_UART_CLK
+#define UART_CLK_FREQ           UART_CLK
 
 /* indicating the base address of UART */
 #define UART0_BASE              0x50200D00

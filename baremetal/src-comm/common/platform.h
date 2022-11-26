@@ -12,7 +12,7 @@
 
 #include <common.h>
 
-#define CHIP_PLL_ENABLE         0
+#define CHIP_PLL_ENABLE         1
 
 /* Interrupt Number Definition */
 typedef enum IRQn {
@@ -43,40 +43,13 @@ typedef enum IRQn {
 
 #include "core_cm33.h"                  /* Processor and core peripherals */
 
-/* Process stack size */
-#define SP_PROCESS_SIZE         0x200
-
 #if CHIP_PLL_ENABLE
-#define LAS_M33_CLK             (400 * Mhz)
-#define LAS_M0P_CLK             (100 * Mhz)
-#define LAS_TSC_CLK             (24576000)
-#define LAS_PDM_CLK             (3072000)
-#define LAS_I2S_CLK             (24576000)
-#define LAS_UART_CLK            (100 * Mhz)
-#define LAS_I2C_CLK             (200 * Mhz)
-#define LAS_SPI_CLK             (200 * Mhz)
-#define LAS_PWM_CLK             (200 * Mhz)
-#define LAS_TIMER_CLK           (24576000)
-#define LAS_WDT_CLK             (24576000)
-#define LAS_RTC_CLK             (32768)
-#define LAS_PCK_CLK             (200 * Mhz)
+#define M33_CLK             (96 * Mhz)
+#define UART_CLK            (24576000)
 #else  /* Default Clock without PLL enabled */
-#define LAS_M33_CLK             (24576000)
-#define LAS_M0P_CLK             (24576000)
-#define LAS_TSC_CLK             (24576000)
-#define LAS_PDM_CLK             (24576000)
-#define LAS_I2S_CLK             (24576000)
-#define LAS_UART_CLK            (24576000)
-#define LAS_I2C_CLK             (24576000)
-#define LAS_SPI_CLK             (24576000)
-#define LAS_PWM_CLK             (24576000)
-#define LAS_TIMER_CLK           (24576000)
-#define LAS_WDT_CLK             (24576000)
-#define LAS_RTC_CLK             (32768)
-#define LAS_PCK_CLK             (24576000)
 #endif
 
-#define SYSTEM_CLOCK            LAS_M33_CLK
+#define SYSTEM_CLOCK            M33_CLK
 
 /* Memory Map */
 #define LAS_SRAM_SIZE           0x00200000
@@ -111,19 +84,32 @@ typedef enum IRQn {
 /* LAS_SYSCTRL */
 #define LAS_SYS_CTL_BASE_ADD    0xf1640000
 
-
-/* Bear map */
+/* Bear memory map */
 #define IOMUX_BASE 0x50000000
 
 #define SYSREG0_BASE 0x50000c00
 #define SYSREG0_BLE_SYS_STOP (SYSREG0_BASE + 0x54)
 
 #define SYSREG2_BASE 0x50065000
+#define SYSREG2_PLL0_CFG0 (SYSREG2_BASE + 0x0)
+#define SYSREG2_PLL1_CFG0 (SYSREG2_BASE + 0x10)
+#define SYSREG2_HOCO_CFG (SYSREG2_BASE + 0x20)
+#define SYSREG2_DBCLK_CFG (SYSREG2_BASE + 0x38)
+#define SYSREG2_BLE_BUS_CLK_CFG (SYSREG2_BASE + 0x3c)
+#define SYSREG2_USB_CLK_CFG (SYSREG2_BASE + 0x40)
+#define SYSREG2_BLE_CLK_SEL (SYSREG2_BASE + 0x44)
+#define SYSREG2_QSPI_CORE_CLK_SEL (SYSREG2_BASE + 0x48)
+#define SYSREG2_SYS_CLK_SEL (SYSREG2_BASE + 0x4c)
+#define SYSREG2_PERI_CLKA_SEL (SYSREG2_BASE + 0x50)
+#define SYSREG2_PERI_CLKB_SEL (SYSREG2_BASE + 0x54)
+#define SYSREG2_PERI_CLKC_SEL (SYSREG2_BASE + 0x58)
+#define SYSREG2_PERI_CLKD_SEL (SYSREG2_BASE + 0x5c)
+#define SYSREG2_PERI_CLKE_SEL (SYSREG2_BASE + 0x60)
+#define SYSREG2_TRACE_CLK_SEL (SYSREG2_BASE + 0x64)
+#define SYSREG2_CLK_OUT_SEL (SYSREG2_BASE + 0x68)
 #define SYSREG2_BLK_SWR0 (SYSREG2_BASE + 0x6c)
 #define SYSREG2_BLK_SWR1 (SYSREG2_BASE + 0x70)
 #define SYSREG2_BLK_STOP0 (SYSREG2_BASE + 0x74)
 #define SYSREG2_BLK_STOP1 (SYSREG2_BASE + 0x78)
-
-
 
 #endif /* __PLATFORM_H__ */
