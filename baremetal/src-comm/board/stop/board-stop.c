@@ -4,7 +4,8 @@
 
 void board_stop_init(void)
 {
-	/* power on module */
-	*(volatile uint32_t *)(BLK_STOP0) &= ~((1 << BLK_STOP0_UART0) | (1 << BLK_STOP0_UART1) \
-					       | (1 << BLK_STOP0_UART2) | (1 << BLK_STOP0_UART3));
+	/* power on all modules */
+	write_mreg32(SYSREG0_BLE_SYS_STOP, 0xffffffff);
+	write_mreg32(SYSREG2_BLK_STOP0, 0xffffffff);
+	write_mreg32(SYSREG2_BLK_STOP1, 0xffffffff);
 }

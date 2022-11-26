@@ -1,10 +1,5 @@
 /*
  * GNU Linker Script for Cortex-M based device.
- *
- * Author: Zhigang.Kang <Zhigang.Kang@verisilicon.com>
- *
- * Copyright (C) 2021 VeriSilicon Microelectronics (Shanghai) Co., Ltd.
- *
  */
 
 /* Secure sram 128K */

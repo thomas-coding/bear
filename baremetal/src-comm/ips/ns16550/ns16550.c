@@ -2,7 +2,6 @@
 #include "common.h"
 #include "ns16550.h"
 
-#if 1
 static void ns16550_writeb(struct ns16550 *ns_uart, s32 offset, s32 value)
 {
 	u8 *addr = NULL;
@@ -21,26 +20,6 @@ static s32 ns16550_readb(struct ns16550 *ns_uart, s32 offset)
 
 	return read_mreg32(addr);
 }
-#else
-static void ns16550_writeb(struct ns16550 *ns_uart, s32 offset, s32 value)
-{
-	u32 *addr = NULL;
-
-	offset *= 1 << ns_uart->reg_shift;
-	addr = (u32 *)(ns_uart->base + offset);
-	write_mreg32(addr, value);
-}
-
-static s32 ns16550_readb(struct ns16550 *ns_uart, s32 offset)
-{
-	u32 *addr = NULL;
-
-	offset *= 1 << ns_uart->reg_shift;
-	addr = (u32 *)(ns_uart->base + offset);
-
-	return read_mreg32(addr);
-}
-#endif
 
 void ns16550_isr_handle(struct ns16550 *ns_uart)
 {
@@ -82,67 +61,6 @@ static void ns16550_set_baudrate(struct ns16550 *ns_uart, u32 baudrate)
 	ns16550_writeb(ns_uart, UART_DLM, ((div >> 8) & 0xff));
 }
 
-#if 1
-s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
-{
-	u8 tmp8 = 0;
-
-	/* SNPS UART Software Reset */
-	//if (ns_uart->ip_owner & NS_IP_OWNER_SNPS)
-	//	ns16550_writeb(ns_uart, UART_SRR, 0x7);
-
-	u32 data;
-
-	udelay(100);
-
-	// assert srstn ans prstn at the same time
-	data =  read_mreg32(0x50065000 + 0x6C);
-	write_mreg32(0x50065000 + 0x6C, data & (~(0x01 << 14)) & (~(0x01 << 13)) );
-
-	// dassert srstn
-	data =  read_mreg32(0x50065000 + 0x6C);
-	write_mreg32(0x50065000 + 0x6C, data | (0x01 << 14));
-
-	// dassert prstn
-	data =  read_mreg32(0x50065000 + 0x6C);
-	write_mreg32(0x50065000 + 0x6C, data | (0x01 << 13));
-	udelay(100);
-
-	ns16550_set_baudrate(ns_uart, config->baud_rate);
-	ns_uart->priv_data.parity_en = config->parity ? 1 : 0;
-	/* switch to access THR&IER, and uart config */
-	tmp8 = (config->word_size) | (config->parity) | (config->stop_bit);
-	ns16550_writeb(ns_uart, UART_LCR, tmp8);
-	tmp8 = (config->rx_trig_lvl << 6) | (config->tx_trig_lvl << 4)
-	       | (config->dma_mode << 3) | (config->fifo_enable);
-
-	/* If FIFOs are not implemented, Auto Flow Control cannot be selected */
-	if (config->flow_ctrl_enable && (tmp8 & config->fifo_enable) == 0)
-		tmp8 |= config->fifo_enable;
-
-	/* trig level set, dma mode and enable fifo and reset fifo */
-	ns16550_writeb(ns_uart, UART_FCR, tmp8 | 0x06);
-
-	/* flow control config */
-	tmp8 = (config->flow_ctrl_enable << 5) | (config->loop_back << 4);
-	if (config->flow_ctrl_enable)
-		tmp8 |= (0x1 << 1);     /* Request to Send */
-	ns16550_writeb(ns_uart, UART_MCR, tmp8);
-
-	if (config->intr_enable) {
-		ns_uart->priv_data.intr_tflag = UART_INTR_ID_TI;
-		ns_uart->priv_data.intr_rflag = 0;
-		ns_uart->priv_data.irq_rx = 0;
-		ns16550_writeb(ns_uart, UART_IER, UART_IER_ERDI | UART_IER_ETI);
-		ns_uart->en_irq_mode = true;
-	} else {
-		ns16550_writeb(ns_uart, UART_IER, 0x0);
-		ns_uart->en_irq_mode = false;
-	}
-
-	return 0;
-}
-#else
 s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 {
 	u8 tmp8 = 0;
@@ -185,7 +103,6 @@ s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 
 	return 0;
 }
-#endif
 
 static s32 ns16550_uart_putc_intr(struct ns16550 *ns_uart, char c)
 {
