@@ -2,6 +2,26 @@
 #include "common.h"
 #include "ns16550.h"
 
+#if 1
+static void ns16550_writeb(struct ns16550 *ns_uart, s32 offset, s32 value)
+{
+	u8 *addr = NULL;
+
+	offset *= 1 << ns_uart->reg_shift;
+	addr = (u8 *)ns_uart->base + offset;
+	write_mreg32(addr, value);
+}
+
+static s32 ns16550_readb(struct ns16550 *ns_uart, s32 offset)
+{
+	u8 *addr = NULL;
+
+	offset *= 1 << ns_uart->reg_shift;
+	addr = (u8 *)ns_uart->base + offset;
+
+	return read_mreg32(addr);
+}
+#else
 static void ns16550_writeb(struct ns16550 *ns_uart, s32 offset, s32 value)
 {
 	u32 *addr = NULL;
@@ -20,6 +40,7 @@ static s32 ns16550_readb(struct ns16550 *ns_uart, s32 offset)
 
 	return read_mreg32(addr);
 }
+#endif
 
 void ns16550_isr_handle(struct ns16550 *ns_uart)
 {
@@ -27,23 +48,22 @@ void ns16550_isr_handle(struct ns16550 *ns_uart)
 
 	uart_intr_flag = 0xf & ns16550_readb(ns_uart, UART_IIR);
 
-	if (uart_intr_flag == UART_INTR_ID_TI) {
+	if (uart_intr_flag == UART_INTR_ID_TI)
 		/* THR empty */
 		ns_uart->priv_data.intr_tflag = UART_INTR_ID_TI;
-	} else if (uart_intr_flag == UART_INTR_ID_RDI) {
+	else if (uart_intr_flag == UART_INTR_ID_RDI) {
 		/* RHR available */
 		ns_uart->priv_data.irq_rx = ns16550_readb(ns_uart, UART_RBR);
 		ns_uart->priv_data.intr_rflag = UART_INTR_ID_RDI;
 	} else if (uart_intr_flag == UART_INTR_ID_TIMEOUT) {
 		/* Character timeout indication */
-	} else if (uart_intr_flag == UART_INTR_ID_RLSI) {
+	} else if (uart_intr_flag == UART_INTR_ID_RLSI)
 		/*
 		 * Overrun/parity/framing errors, break interrupt, or address
 		 * received interrupt, reading the line status register to know
 		 * what happened.
 		 */
 		ns16550_readb(ns_uart, UART_LSR);
-	}
 }
 
 static void ns16550_set_baudrate(struct ns16550 *ns_uart, u32 baudrate)
@@ -62,13 +82,31 @@ static void ns16550_set_baudrate(struct ns16550 *ns_uart, u32 baudrate)
 	ns16550_writeb(ns_uart, UART_DLM, ((div >> 8) & 0xff));
 }
 
+#if 1
 s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 {
 	u8 tmp8 = 0;
 
 	/* SNPS UART Software Reset */
-	if (ns_uart->ip_owner & NS_IP_OWNER_SNPS)
-		ns16550_writeb(ns_uart, UART_SRR, 0x7);
+	//if (ns_uart->ip_owner & NS_IP_OWNER_SNPS)
+	//	ns16550_writeb(ns_uart, UART_SRR, 0x7);
+
+	u32 data;
+
+	udelay(100);
+
+	// assert srstn ans prstn at the same time
+	data =  read_mreg32(0x50065000 + 0x6C);
+	write_mreg32(0x50065000 + 0x6C, data & (~(0x01 << 14)) & (~(0x01 << 13)) );
+
+	// dassert srstn
+	data =  read_mreg32(0x50065000 + 0x6C);
+	write_mreg32(0x50065000 + 0x6C, data | (0x01 << 14));
+
+	// dassert prstn
+	data =  read_mreg32(0x50065000 + 0x6C);
+	write_mreg32(0x50065000 + 0x6C, data | (0x01 << 13));
+	udelay(100);
 
 	ns16550_set_baudrate(ns_uart, config->baud_rate);
 	ns_uart->priv_data.parity_en = config->parity ? 1 : 0;
@@ -76,7 +114,7 @@ s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 	tmp8 = (config->word_size) | (config->parity) | (config->stop_bit);
 	ns16550_writeb(ns_uart, UART_LCR, tmp8);
 	tmp8 = (config->rx_trig_lvl << 6) | (config->tx_trig_lvl << 4)
-		| (config->dma_mode << 3) | (config->fifo_enable);
+	       | (config->dma_mode << 3) | (config->fifo_enable);
 
 	/* If FIFOs are not implemented, Auto Flow Control cannot be selected */
 	if (config->flow_ctrl_enable && (tmp8 & config->fifo_enable) == 0)
@@ -88,7 +126,7 @@ s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 	/* flow control config */
 	tmp8 = (config->flow_ctrl_enable << 5) | (config->loop_back << 4);
 	if (config->flow_ctrl_enable)
-		tmp8 |= (0x1 << 1);	/* Request to Send */
+		tmp8 |= (0x1 << 1);     /* Request to Send */
 	ns16550_writeb(ns_uart, UART_MCR, tmp8);
 
 	if (config->intr_enable) {
@@ -104,6 +142,50 @@ s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
 
 	return 0;
 }
+#else
+s32 ns16550_uart_init(struct ns16550 *ns_uart, struct ns16550_config *config)
+{
+	u8 tmp8 = 0;
+
+	/* SNPS UART Software Reset */
+	if (ns_uart->ip_owner & NS_IP_OWNER_SNPS)
+		ns16550_writeb(ns_uart, UART_SRR, 0x7);
+
+	ns16550_set_baudrate(ns_uart, config->baud_rate);
+	ns_uart->priv_data.parity_en = config->parity ? 1 : 0;
+	/* switch to access THR&IER, and uart config */
+	tmp8 = (config->word_size) | (config->parity) | (config->stop_bit);
+	ns16550_writeb(ns_uart, UART_LCR, tmp8);
+	tmp8 = (config->rx_trig_lvl << 6) | (config->tx_trig_lvl << 4)
+	       | (config->dma_mode << 3) | (config->fifo_enable);
+
+	/* If FIFOs are not implemented, Auto Flow Control cannot be selected */
+	if (config->flow_ctrl_enable && (tmp8 & config->fifo_enable) == 0)
+		tmp8 |= config->fifo_enable;
+
+	/* trig level set, dma mode and enable fifo and reset fifo */
+	ns16550_writeb(ns_uart, UART_FCR, tmp8 | 0x06);
+
+	/* flow control config */
+	tmp8 = (config->flow_ctrl_enable << 5) | (config->loop_back << 4);
+	if (config->flow_ctrl_enable)
+		tmp8 |= (0x1 << 1);     /* Request to Send */
+	ns16550_writeb(ns_uart, UART_MCR, tmp8);
+
+	if (config->intr_enable) {
+		ns_uart->priv_data.intr_tflag = UART_INTR_ID_TI;
+		ns_uart->priv_data.intr_rflag = 0;
+		ns_uart->priv_data.irq_rx = 0;
+		ns16550_writeb(ns_uart, UART_IER, UART_IER_ERDI | UART_IER_ETI);
+		ns_uart->en_irq_mode = true;
+	} else {
+		ns16550_writeb(ns_uart, UART_IER, 0x0);
+		ns_uart->en_irq_mode = false;
+	}
+
+	return 0;
+}
+#endif
 
 static s32 ns16550_uart_putc_intr(struct ns16550 *ns_uart, char c)
 {
@@ -111,7 +193,7 @@ static s32 ns16550_uart_putc_intr(struct ns16550 *ns_uart, char c)
 	s32 ret = -1;
 
 	while ((ns_uart->priv_data.intr_tflag != UART_INTR_ID_TI)
-		&& (ns_uart->time_out ? (count-- != 0) : 1))
+	       && (ns_uart->time_out ? (count-- != 0) : 1))
 		;
 
 	ns_uart->priv_data.intr_tflag = 0;
@@ -119,12 +201,11 @@ static s32 ns16550_uart_putc_intr(struct ns16550 *ns_uart, char c)
 	if ((count != 0) || (ns_uart->time_out == 0)) {
 		ns16550_writeb(ns_uart, UART_THR, (u8)c);
 		ret = 0;
-	} else {
+	} else
 		return ret;
-	}
 
 	while ((ns_uart->priv_data.intr_tflag != UART_INTR_ID_TI)
-		&& (ns_uart->time_out ? (count-- != 0) : 1))
+	       && (ns_uart->time_out ? (count-- != 0) : 1))
 		;
 
 	return ret;
@@ -136,22 +217,21 @@ static s32 ns16550_uart_putc_polling(struct ns16550 *ns_uart, char c)
 	s32 val = -1;
 	s32 ret = -1;
 
-	do {
+	do
 		val = ns16550_readb(ns_uart, UART_LSR);
-	} while (((val & 0x20) == 0x00) /* transmit holding register empty */
-		&& ((count != 0) || (ns_uart->time_out == 0)));
+	while (((val & 0x20) == 0x00)   /* transmit holding register empty */
+	       && ((count != 0) || (ns_uart->time_out == 0)));
 
 	if ((count != 0) || (ns_uart->time_out == 0)) {
 		ns16550_writeb(ns_uart, UART_THR, (u8)c);
 		ret = 0;
-	} else {
+	} else
 		return ret;
-	}
 
-	do {
+	do
 		val = ns16550_readb(ns_uart, UART_LSR);
-	} while (((val & 0x20) == 0x00) /* transmit holding register empty */
-		&& ((count != 0) || (ns_uart->time_out == 0)));
+	while (((val & 0x20) == 0x00)   /* transmit holding register empty */
+	       && ((count != 0) || (ns_uart->time_out == 0)));
 
 	return ret;
 }
@@ -163,13 +243,13 @@ static s32 ns16550_uart_getc_intr(struct ns16550 *ns_uart, char *c)
 
 	while (((ns_uart->priv_data.intr_rflag != UART_INTR_ID_RDI)
 		&& (ns_uart->priv_data.intr_rflag != UART_INTR_ID_TIMEOUT))
-		&& ((count != 0) || (ns_uart->time_out == 0)))
+	       && ((count != 0) || (ns_uart->time_out == 0)))
 		;
 
 	if ((ns_uart->priv_data.intr_rflag == UART_INTR_ID_RDI)
-		&& ((count != 0) || (ns_uart->time_out == 0))) {
+	    && ((count != 0) || (ns_uart->time_out == 0))) {
 		if (ns_uart->priv_data.parity_en
-			&& (ns16550_readb(ns_uart, UART_LSR) & 0x04)) {
+		    && (ns16550_readb(ns_uart, UART_LSR) & 0x04)) {
 			ns_uart->priv_data.intr_rflag = 0;
 			return -1;
 		}
@@ -191,10 +271,10 @@ static s32 ns16550_uart_getc_polling(struct ns16550 *ns_uart, char *c)
 	u32 count = ns_uart->time_out;
 	u32 val = 0;
 
-	do {
+	do
 		val = ns16550_readb(ns_uart, UART_LSR);
-	} while (((val & 0x1) == 0x00) /* transmit holding register empty */
-		&& ((count != 0) || (ns_uart->time_out == 0)));
+	while (((val & 0x1) == 0x00)   /* transmit holding register empty */
+	       && ((count != 0) || (ns_uart->time_out == 0)));
 
 	if (ns_uart->priv_data.parity_en && (val & 0x04))
 		return -1;
@@ -212,9 +292,9 @@ s32 ns16550_uart_getc_timeout(struct ns16550 *ns_uart, char *c, u32 timeout)
 	u32 count = timeout;
 	u32 val = 0;
 
-	do {
+	do
 		val = ns16550_readb(ns_uart, UART_LSR);
-	} while (((val & 0x1) == 0x00) && ((count-- != 0)));
+	while (((val & 0x1) == 0x00) && ((count-- != 0)));
 
 	if (ns_uart->priv_data.parity_en && (val & 0x04))
 		return -1;
@@ -255,16 +335,15 @@ void ns16550_uart_puts(struct ns16550 *ns_uart, const char *s)
 		if (*s == '\n') {
 			ns16550_uart_putc(ns_uart, '\r');
 			ns16550_uart_putc(ns_uart, '\n');
-		} else {
+		} else
 			ns16550_uart_putc(ns_uart, *s);
-		}
 		s++;
 	}
 }
 
 s32 ns16550_register_default(struct ns16550 *ns_uart,
-			const struct ns16550_reg_def *table,
-			struct ns16550_reg_def *comp, u32 num)
+			     const struct ns16550_reg_def *table,
+			     struct ns16550_reg_def *comp, u32 num)
 {
 	u32 i = 0;
 	u32 val = 0;

@@ -15,6 +15,10 @@ include_directories(./src-s/board/mpu)
 include_directories(./src-comm/common)
 include_directories(./src-comm/ips/ns16550)
 include_directories(./src-comm/board/ns16550)
+include_directories(./src-comm/board/reset)
+include_directories(./src-comm/board/clock)
+include_directories(./src-comm/board/stop)
+include_directories(./src-comm/board/pinmux)
 include_directories(./src-comm/cmsis)
 include_directories(./src-comm/ipstest)
 
@@ -39,6 +43,10 @@ set(SRC_LIST
     ${CMAKE_HOME_DIRECTORY}/src-comm/common/interrupt.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/common/tiny_console.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/board/ns16550/board-ns16550.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/board/clock/board-clock.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/board/reset/board-reset.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/board/stop/board-stop.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/board/pinmux/board-pinmux.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/common/tiny_command.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ips/ns16550/ns16550.c
     )

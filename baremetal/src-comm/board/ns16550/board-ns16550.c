@@ -6,7 +6,7 @@
 
 struct ns16550 uart[UART_IP_NUM] = {
 	{
-		.ip_owner = NS_IP_OWNER_SNPS,
+		.ip_owner = NS_IP_OWNER_VS,
 		.base = (void *)UART0_BASE,
 		.clk_freq = UART_CLK_FREQ,
 		.reg_shift = 0,
@@ -15,7 +15,7 @@ struct ns16550 uart[UART_IP_NUM] = {
 		.irq_num = UART0_INTR_NUM,
 	},
 	{
-		.ip_owner = NS_IP_OWNER_SNPS,
+		.ip_owner = NS_IP_OWNER_VS,
 		.base = (void *)UART1_BASE,
 		.clk_freq = UART_CLK_FREQ,
 		.reg_shift = 0,
@@ -24,7 +24,7 @@ struct ns16550 uart[UART_IP_NUM] = {
 		.irq_num = UART1_INTR_NUM,
 	},
 	{
-		.ip_owner = NS_IP_OWNER_SNPS,
+		.ip_owner = NS_IP_OWNER_VS,
 		.base = (void *)UART2_BASE,
 		.clk_freq = UART_CLK_FREQ,
 		.reg_shift = 0,
@@ -33,7 +33,7 @@ struct ns16550 uart[UART_IP_NUM] = {
 		.irq_num = UART2_INTR_NUM,
 	},
 	{
-		.ip_owner = NS_IP_OWNER_SNPS,
+		.ip_owner = NS_IP_OWNER_VS,
 		.base = (void *)UART3_BASE,
 		.clk_freq = UART_CLK_FREQ,
 		.reg_shift = 0,
@@ -45,32 +45,32 @@ struct ns16550 uart[UART_IP_NUM] = {
 };
 
 struct ns16550_config ns16550_config_def = {
-	.baud_rate = UART_BAUD_115200,
-	.word_size = UART_LCR_WORD_LEN8,
-	.parity = UART_PARITY_NONE,
-	.stop_bit = UART_LCR_STOP_1BIT,
-	.rx_trig_lvl = UART_RX_TRIGLVL0,
-	.tx_trig_lvl = UART_TX_TRIGLVL0,
-	.dma_mode = 0,
-	.fifo_enable = 0,
-	.intr_enable = 0,
-	.flow_ctrl_enable = 0,
-	.loop_back = 0,
+	.baud_rate		= UART_BAUD_115200,
+	.word_size		= UART_LCR_WORD_LEN8,
+	.parity			= UART_PARITY_NONE,
+	.stop_bit		= UART_LCR_STOP_1BIT,
+	.rx_trig_lvl		= UART_RX_TRIGLVL0,
+	.tx_trig_lvl		= UART_TX_TRIGLVL0,
+	.dma_mode		= 0,
+	.fifo_enable		= 0,
+	.intr_enable		= 0,
+	.flow_ctrl_enable	= 0,
+	.loop_back		= 0,
 };
 
 const struct ns16550_reg_def ns16550_reg_def_table[UART_REG_NUM] = {
-	{0x00, 0x00000000},
-	{0x04, 0x00000000},
-	{0x08, 0x00000001},
-	{0x0c, 0x00000000},
-	{0x10, 0x00000000},
-	{0x14, 0x00000060},
-	{0x18, 0x00000000},
-	{0x1c, 0x00000000},
-	{0x70, 0x00000000},
-	{0x7c, 0x00000006},
-	{0xa4, 0x00000000},
-	{0xa8, 0x00000000},
+	{ 0x00, 0x00000000 },
+	{ 0x04, 0x00000000 },
+	{ 0x08, 0x00000001 },
+	{ 0x0c, 0x00000000 },
+	{ 0x10, 0x00000000 },
+	{ 0x14, 0x00000060 },
+	{ 0x18, 0x00000000 },
+	{ 0x1c, 0x00000000 },
+	{ 0x70, 0x00000000 },
+	{ 0x7c, 0x00000006 },
+	{ 0xa4, 0x00000000 },
+	{ 0xa8, 0x00000000 },
 };
 
 void console_init(void)
@@ -79,7 +79,7 @@ void console_init(void)
 
 	if (ns16550_config_def.intr_enable)
 		request_irq(uart[CONSOLE_UART_NUM].irq_num, ISR_TYPE_IRQ,
-			uart_irq_handler, &uart[CONSOLE_UART_NUM]);
+			    uart_irq_handler, &uart[CONSOLE_UART_NUM]);
 
 }
 

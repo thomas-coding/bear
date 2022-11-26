@@ -13,4 +13,6 @@
 
 void ns16550_test(void);
 
+void ns16550_test_loopback(struct ns16550 *ns_uart);
+
 #endif /* __T_NS16550_H__ */

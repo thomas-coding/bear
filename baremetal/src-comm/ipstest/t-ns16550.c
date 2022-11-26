@@ -15,7 +15,7 @@
 
 //#define NS16550_REG_DEFAULT_TEST
 
-#define TDLEN		16
+#define TDLEN           16
 
 struct uart_test_item {
 	char *test_name;
@@ -34,37 +34,37 @@ static void ns16550_test_word_size(struct ns16550 *ns_uart);
 static void ns16550_test_parity(struct ns16550 *ns_uart);
 static void ns16550_test_stopbit(struct ns16550 *ns_uart);
 static void ns16550_test_flowctrl(struct ns16550 *ns_uart);
-static void ns16550_test_loopback(struct ns16550 *ns_uart);
+void ns16550_test_loopback(struct ns16550 *ns_uart);
 
 struct uart_test_item uart0_test_items[] = {
-	{"loop back", ns16550_test_loopback},
-	{"uart mode", ns16550_test_irq_polling},
-	{"baudrate", ns16550_test_baudrate},
-	{"word size", ns16550_test_word_size},
-	{"parity", ns16550_test_parity},
-	{"stop bit", ns16550_test_stopbit},
-	{"flow control", ns16550_test_flowctrl},
-	{NULL}
+	{ "loop back",	  ns16550_test_loopback	   },
+	{ "uart mode",	  ns16550_test_irq_polling },
+	{ "baudrate",	  ns16550_test_baudrate	   },
+	{ "word size",	  ns16550_test_word_size   },
+	{ "parity",	  ns16550_test_parity	   },
+	{ "stop bit",	  ns16550_test_stopbit	   },
+	{ "flow control", ns16550_test_flowctrl	   },
+	{ NULL }
 };
 
 struct uart_test_item uart1_test_items[] = {
-	{"loop back", ns16550_test_loopback},
-	{"uart mode", ns16550_test_irq_polling},
-	{"baudrate", ns16550_test_baudrate},
-	{"word size", ns16550_test_word_size},
-	{"parity", ns16550_test_parity},
-	{"stop bit", ns16550_test_stopbit},
-	{NULL}
+	{ "loop back", ns16550_test_loopback	},
+	{ "uart mode", ns16550_test_irq_polling },
+	{ "baudrate",  ns16550_test_baudrate	},
+	{ "word size", ns16550_test_word_size	},
+	{ "parity",    ns16550_test_parity	},
+	{ "stop bit",  ns16550_test_stopbit	},
+	{ NULL }
 };
 
 struct uart_test_table uart_test_tb[] = {
-	{0, "uart0", uart0_test_items},
-	{1, "uart1", uart1_test_items},
-	{0, NULL}
+	{ 0, "uart0", uart0_test_items },
+	{ 1, "uart1", uart1_test_items },
+	{ 0, NULL }
 };
 
-char data[TDLEN] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-	'K', 'L', 'M', 'N', '\n', '\r'};
+char data[TDLEN] = { 'A', 'B', 'C', 'D', 'E',  'F', 'G', 'H', 'I', 'J',
+		     'K', 'L', 'M', 'N', '\n', '\r' };
 
 /*
  * Use for user's reply, y or n.
@@ -75,7 +75,7 @@ u32 wait_for_reply(struct ns16550 *ns_uart)
 {
 	u8 i = 0;
 	char ch = 0;
-	char answer[20] = {0};
+	char answer[20] = { 0 };
 
 	for (i = 0; i < 20; i++)
 		answer[i] = '\0';
@@ -120,9 +120,9 @@ static void ns16550_test_irq_polling(struct ns16550 *ns_uart)
 	u32 i = 0;
 	u32 get = 0;
 	u32 mode = 0;
-	struct ns16550_config config = {0};
-	u8 intr_enable[] = {1, 0};
-	char * const uart_mode_str_tb[] = {"interrupt", "query"};
+	struct ns16550_config config = { 0 };
+	u8 intr_enable[] = { 1, 0 };
+	char * const uart_mode_str_tb[] = { "interrupt", "query" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -137,7 +137,7 @@ static void ns16550_test_irq_polling(struct ns16550 *ns_uart)
 
 		if (intr_enable[mode])
 			request_irq(ns_uart->irq_num, ISR_TYPE_IRQ,
-				uart_irq_handler, ns_uart);
+				    uart_irq_handler, ns_uart);
 		else
 			free_irq(ns_uart->irq_num);
 
@@ -154,7 +154,7 @@ static void ns16550_test_irq_polling(struct ns16550 *ns_uart)
 
 			if ((get != 1) && (get != 0))
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' or 'n'   ");
+						  "\n\tPlease enter 'y' or 'n'   ");
 			else
 				break;
 		}
@@ -174,11 +174,11 @@ static void ns16550_test_baudrate(struct ns16550 *ns_uart)
 	u32 i = 0;
 	u32 baudrate = 0;
 	u32 get = 0;
-	struct ns16550_config config = {0};
+	struct ns16550_config config = { 0 };
 	u32 bard_tb[] = { UART_BAUD_9600, UART_BAUD_38400, UART_BAUD_57600,
-			UART_BAUD_DIV1, UART_BAUD_115200};
-	char * const bard_str_tb[] = {"9600", "38400", "57600",
-			"1500000(DIV1)", "115200"};
+			  UART_BAUD_DIV1, UART_BAUD_115200 };
+	char * const bard_str_tb[] = { "9600",		"38400", "57600",
+				       "1500000(DIV1)", "115200" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -207,7 +207,7 @@ static void ns16550_test_baudrate(struct ns16550 *ns_uart)
 
 			if ((get != 1) && (get != 0))
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' or 'n'   ");
+						  "\n\tPlease enter 'y' or 'n'   ");
 			else
 				break;
 		}
@@ -229,10 +229,10 @@ static void ns16550_test_word_size(struct ns16550 *ns_uart)
 	u8 first = 2;
 	u32 i = 0;
 	u32 get = 0;
-	struct ns16550_config config = {0};
-	u8 word_len[] = {UART_LCR_WORD_LEN5, UART_LCR_WORD_LEN6,
-		UART_LCR_WORD_LEN7, UART_LCR_WORD_LEN8};
-	char * const word_len_str_tb[] = {"5", "6", "7", "8"};
+	struct ns16550_config config = { 0 };
+	u8 word_len[] = { UART_LCR_WORD_LEN5, UART_LCR_WORD_LEN6,
+			  UART_LCR_WORD_LEN7, UART_LCR_WORD_LEN8 };
+	char * const word_len_str_tb[] = { "5", "6", "7", "8" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -270,7 +270,7 @@ static void ns16550_test_word_size(struct ns16550 *ns_uart)
 			if (wordsize == 3 || first == 2) {
 				ns16550_uart_puts(ns_uart, "\tWord size is ");
 				ns16550_uart_puts(ns_uart,
-					word_len_str_tb[wordsize]);
+						  word_len_str_tb[wordsize]);
 				ns16550_uart_puts(ns_uart, "? [y] ");
 			}
 
@@ -281,7 +281,7 @@ static void ns16550_test_word_size(struct ns16550 *ns_uart)
 
 			while (wait_for_reply(ns_uart) != 1)
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' ");
+						  "\n\tPlease enter 'y' ");
 
 			ns16550_uart_puts(ns_uart, " :Output is ---\n\t\t");
 			for (i = 0; i < TDLEN; i++)
@@ -293,7 +293,7 @@ static void ns16550_test_word_size(struct ns16550 *ns_uart)
 
 				if ((get != 1) && (get != 0))
 					ns16550_uart_puts(ns_uart,
-						"\n\tPlease enter 'y' or 'n' ");
+							  "\n\tPlease enter 'y' or 'n' ");
 				else
 					break;
 			}
@@ -314,9 +314,9 @@ static void ns16550_test_parity(struct ns16550 *ns_uart)
 	u8 parity = 0;
 	u32 i = 0;
 	u32 get = 0;
-	struct ns16550_config config = {0};
-	u8 parity_tb[] = {UART_PARITY_ODD, UART_PARITY_EVEN, UART_PARITY_NONE};
-	char * const parity_str_tb[] = {"ODD", "EVEN", "NONE"};
+	struct ns16550_config config = { 0 };
+	u8 parity_tb[] = { UART_PARITY_ODD, UART_PARITY_EVEN, UART_PARITY_NONE };
+	char * const parity_str_tb[] = { "ODD", "EVEN", "NONE" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -345,7 +345,7 @@ static void ns16550_test_parity(struct ns16550 *ns_uart)
 
 			if ((get != 1) && (get != 0))
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' or 'n'   ");
+						  "\n\tPlease enter 'y' or 'n'   ");
 			else
 				break;
 		}
@@ -368,10 +368,10 @@ static void ns16550_test_stopbit(struct ns16550 *ns_uart)
 	u8 first = 1;
 	u32 i = 0;
 	u32 get = 0;
-	struct ns16550_config config = {0};
-	u8 stop_cfg[] = {UART_LCR_STOP_2BIT, UART_LCR_STOP_2BIT,
-		UART_LCR_STOP_1BIT};
-	char * const stop_str_tb[] = {"1.5 bits", "2 bits", "1 bit"};
+	struct ns16550_config config = { 0 };
+	u8 stop_cfg[] = { UART_LCR_STOP_2BIT, UART_LCR_STOP_2BIT,
+			  UART_LCR_STOP_1BIT };
+	char * const stop_str_tb[] = { "1.5 bits", "2 bits", "1 bit" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -405,7 +405,7 @@ static void ns16550_test_stopbit(struct ns16550 *ns_uart)
 			if (stopbit == 2 || first == 1) {
 				ns16550_uart_puts(ns_uart, "\tstopbit is ");
 				ns16550_uart_puts(ns_uart,
-					stop_str_tb[stopbit]);
+						  stop_str_tb[stopbit]);
 				ns16550_uart_puts(ns_uart, "? [y] ");
 			}
 			mdelay(10);
@@ -416,7 +416,7 @@ static void ns16550_test_stopbit(struct ns16550 *ns_uart)
 
 			while (wait_for_reply(ns_uart) != 1)
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' ");
+						  "\n\tPlease enter 'y' ");
 
 			ns16550_uart_puts(ns_uart, " :Output is ---\n\t\t");
 			for (i = 0; i < TDLEN; i++)
@@ -428,7 +428,7 @@ static void ns16550_test_stopbit(struct ns16550 *ns_uart)
 
 				if ((get != 1) && (get != 0))
 					ns16550_uart_puts(ns_uart,
-						"\n\tPlease enter 'y' or 'n' ");
+							  "\n\tPlease enter 'y' or 'n' ");
 				else
 					break;
 			}
@@ -449,9 +449,9 @@ static void ns16550_test_flowctrl(struct ns16550 *ns_uart)
 	u8 flowctrl = 0;
 	u32 i = 0;
 	u32 get = 0;
-	struct ns16550_config config = {0};
-	u8 fc_test[] = {1, 0};
-	char * const fc_str_tb[] = {"enabled", "disabled"};
+	struct ns16550_config config = { 0 };
+	u8 fc_test[] = { 1, 0 };
+	char * const fc_str_tb[] = { "enabled", "disabled" };
 
 	memcpy(&config, &ns16550_config_def, sizeof(config));
 	ns16550_uart_init(ns_uart, &config);
@@ -484,7 +484,7 @@ static void ns16550_test_flowctrl(struct ns16550 *ns_uart)
 
 			if ((get != 1) && (get != 0))
 				ns16550_uart_puts(ns_uart,
-					"\n\tPlease enter 'y' or 'n'   ");
+						  "\n\tPlease enter 'y' or 'n'   ");
 			else
 				break;
 		}
@@ -499,14 +499,14 @@ static void ns16550_test_flowctrl(struct ns16550 *ns_uart)
 /*
  * ns16550_test_loopback: Tests LoopBack Bit of UARTs.
  */
-static void ns16550_test_loopback(struct ns16550 *ns_uart)
+void ns16550_test_loopback(struct ns16550 *ns_uart)
 {
 	char sch = 0, rch = 0;
 	u8 i = 0;
 	u32 ret = 0;
-	struct ns16550_config config = {0};
+	struct ns16550_config config = { 0 };
 
-	vs_printf("\n\t- - - Test loop back.\n");
+	//vs_printf("\n\t- - - Test loop back.\n");
 
 	mdelay(10);
 
@@ -560,7 +560,7 @@ static void ns16550_test_reg_default(struct ns16550 *ns_uart, u32 ns_id)
 	memset(comp, 0x00, sizeof(comp));
 
 	ret = ns16550_register_default(ns_uart, ns16550_reg_def_table,
-				comp, UART_REG_NUM);
+				       comp, UART_REG_NUM);
 
 	if (ns_id == CONSOLE_UART_NUM) {
 		mdelay(10);
@@ -577,9 +577,9 @@ static void ns16550_test_reg_default(struct ns16550 *ns_uart, u32 ns_id)
 	for (i = 0; i < UART_REG_NUM; i++) {
 		if (comp[i].off == 0xffffffff) {
 			vs_printf("\t\t0x%02x\t%08x\t%08x\n",
-				ns16550_reg_def_table[i].off,
-				ns16550_reg_def_table[i].def,
-				comp[i].def);
+				  ns16550_reg_def_table[i].off,
+				  ns16550_reg_def_table[i].def,
+				  comp[i].def);
 		}
 	}
 }
@@ -593,8 +593,8 @@ void ns16550_test(void)
 
 	vs_printf("Testing uart...\n");
 	vs_printf("Default configure:\n\t Baudrate --- 115200\n"
-		"\t Parity --- NONE\n"
-		"\t Wordsize --- 8\n");
+		  "\t Parity --- NONE\n"
+		  "\t Wordsize --- 8\n");
 
 	while (uart_test->name != NULL) {
 		vs_printf("Testing %s...\n", uart_test->name);
@@ -602,7 +602,7 @@ void ns16550_test(void)
 #ifdef NS16550_REG_DEFAULT_TEST
 		ns16550_test_reg_default(&uart[uart_test->id], uart_test->id);
 #endif
-		if(uart_test->id == 0) {
+		if (uart_test->id == 0) {
 			vs_printf("Connect  UART_to_USB board and Alius\n");
 			vs_printf("J1 PIN8 to J566 PIN8(TX),\n");
 			vs_printf("J1 PIN7 to J566 PIN6(RX)\n");
@@ -623,7 +623,7 @@ void ns16550_test(void)
 		uart_test_item = uart_test->uart_test_item;
 		while (uart_test_item->test_name != NULL) {
 			vs_printf("\n \tStart Uart Test: %s\n",
-				uart_test_item->test_name);
+				  uart_test_item->test_name);
 			mdelay(100);
 			if (uart_test_item->test_func)
 				uart_test_item->test_func(&uart[uart_test->id]);
