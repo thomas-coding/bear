@@ -7,6 +7,7 @@
 #include "board-ns16550.h"
 #include "data-type.h"
 #include "t-ns16550.h"
+#include "t-qspi-flash.h"
 
 #include "board-pinmux.h"
 #include "board-clock.h"
@@ -14,14 +15,17 @@
 #include "board-reset.h"
 
 extern void tiny_uart_console(void);
+extern void qspi_flash_test(void);
 
 void *verify_callback[][2] = {
-	{(void *)tiny_uart_console,	"S Tiny console"},
-	{ (void *)ns16550_test, "S Uart NS16550 test"																 },
-	{ 0,			0																		 },
+	{ (void *)tiny_uart_console, "S Tiny console"	   },
+	{ (void *)ns16550_test,	     "S Uart NS16550 test" },
+	{ (void *)qspi_flash_test,   "S qspi flash test"   },
+	{ 0,			     0			   },
 };
 
-void board_init(void) {
+void board_init(void)
+{
 	board_stop_init();
 	board_reset_init();
 	board_clock_init();
@@ -35,6 +39,7 @@ int main(void)
 {
 	//FIXME
 	//secure_MPU_init();
+	board_init();
 
 	vs_printf("\nBare-metal Secure world test begin ...\n");
 

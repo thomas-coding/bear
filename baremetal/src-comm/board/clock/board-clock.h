@@ -135,6 +135,115 @@ struct PERI_CLKD_CLOCK_SEL {
 #define CLK_OUT_SEL ((struct CLOCK_SEL  *)SYSREG2_CLK_OUT_SEL)
 
 
+/* PLL0 define config
+ * Set PLL0 384M
+ *
+ * 24M input clock
+ * ref clock = PLL_REF_MOSC
+ *
+ * Output Clock = 24M /24 * 384 /1 =384M
+ * PLL_DM = 24
+ * PLL_DN = 384
+ * PLL_DP = 1
+ *
+ * Power on:
+ * PLL_PD = 0
+ * PLL_PDDP = 0
+ * PLL_RESETN = 1
+ */
+#define PLLO_DEFAULT_CONFIG (0 << 4) | (0 << 5) | (1 << 7) |  \
+	(0 << 8) | (0 << 9) | \
+	(1 << 10) | (384 << 13) | (24 << 24) | \
+	(PLL_REF_MOSC << 30)
+
+/* PLL1 define config
+ * Set PLL0 96M
+ *
+ * 24M input clock
+ * ref clock = PLL_REF_MOSC
+ *
+ * Output Clock = 24M /24 * 384 /4 =96M
+ * PLL_DM = 24
+ * PLL_DN = 384
+ * PLL_DP = 4
+ *
+ * Power on:
+ * PLL_PD = 0
+ * PLL_PDDP = 0
+ * PLL_RESETN = 1
+ */
+#define PLL1_DEFAULT_CONFIG (0 << 4) | (0 << 5) | (1 << 7) |  \
+	(0 << 8) | (0 << 9) | \
+	(4 << 10) | (384 << 13) | (24 << 24) | \
+	(PLL_REF_MOSC << 30)
+
+/* Externel main oscillator (24M) */
+#define MOSC_CLOCK_DEFAULT_CONFIG (1 << 1) | \
+	(1 << 2)
+
+#define MOCO_CLOCK_DEFAULT_CONFIG (0 << 0)
+
+/* HOCO clcok (24M) */
+#define HOCO_CLOCK_DEFAULT_CONFIG (1 << 0) | \
+	(0 << 3)
+
+
+/* Sys clock (96M) : M33 ,Bus, ROM, SRAM, DMA, CRYP*/
+#if 0 //test
+#define SYS_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+#else
+#define SYS_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_PLL1 << 0) | \
+	(0 << 3)
+#endif
+
+/* BLE bus clock (96M) : BLE base band, BLE Protocol Engine, From PLL1*/
+#define BLE_BUS_CLOCK_DEFAULT_CONFIG (0 << 0)
+
+/* Sys clock (384M) : QSPI*/
+#define QSPI_CORE_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_PLL0 << 0) | \
+	(0 << 3)
+
+/* BLE clock (384M), BLE core */
+#define BLE_CORE_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_PLL0 << 0) | \
+	(0 << 3)
+
+/* USB clock (24M), usb phy, from MOSC */
+#define USB_CLOCK_DEFAULT_CONFIG (0 << 0) | \
+	(0 << 2)
+
+/* PERI A clock (24M), UART */
+#define PERI_CLKA_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* PERI B clock (24M), WDT */
+#define PERI_CLKB_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* PERI C clock (24M), ADC */
+#define PERI_CLKC_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* PERI D clock (24M), DAC */
+#define PERI_CLKD_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* PERI E clock (24M), TIMER32, PWM */
+#define PERI_CLKE_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* Debounce clock clock (24M), IRQ, ADC, GPIO */
+#define DEBOUNCE_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+/* Trace clock (24M), CPU-OCD */
+#define TRACE_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_MOSC << 0) | \
+	(0 << 3)
+
+
+/* Clock out clock (12M), CLKOUT pin */
+#define CLOCK_OUT_CLOCK_DEFAULT_CONFIG (BSP_CLOCKS_SOURCE_HOCO << 0) | \
+	(1 << 3)
 void board_clock_init(void);
 
 #endif /* __BOARD_CLOCK_H__ */

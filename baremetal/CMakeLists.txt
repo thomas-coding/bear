@@ -55,6 +55,7 @@ set(SRC_LIST
 set(SRC_LIST
     ${SRC_LIST}
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-ns16550.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-qspi-flash.c
     )
 
 # Target

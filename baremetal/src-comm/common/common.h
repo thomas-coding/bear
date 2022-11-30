@@ -82,7 +82,7 @@ extern void console_puts(const char *s);
 #define Khz                             1000
 #define hz                              1
 
-#define HARDWARE_REGISTER_WAIT(reg, required_value)    while (reg != required_value) { /* Wait. */ }
+#define HARDWARE_REGISTER_WAIT(reg, required_value)    while (read_mreg32(reg) != required_value) { /* Wait. */ }
 
 void vs_verify_loop(void);
 
