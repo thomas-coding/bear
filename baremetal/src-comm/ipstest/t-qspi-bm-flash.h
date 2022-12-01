@@ -4,6 +4,7 @@
 
 #include "common.h"
 
+#if 0
 // ----------------------- spi ------------------------------
 // config XIP register
 #define XIP_REG_BASE 0x5001E000
@@ -299,6 +300,7 @@ struct norflash_dev_com {
 	u8 use_irq;
 	u8 cs;
 };
+#endif
 
 
 void qspi_bm_flash_test(void);
