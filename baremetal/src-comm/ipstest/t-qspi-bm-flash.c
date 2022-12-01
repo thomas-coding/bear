@@ -1,5 +1,5 @@
 
-#include "t-qspi-flash.h"
+#include "t-qspi-bm-flash.h"
 #include "common.h"
 
 void qspi_test_init()
@@ -206,12 +206,14 @@ void flash_write_status_register()
 	write_mreg32(0x5001E000 + ( 0x14 ), 0x11);              //QSPI_CFG1
 	write_mreg32(0x5001E000 + ( 0x18 ), 0x08000000);        //instruction len 8 bit
 	write_mreg32(0x5001E000 + ( 0x1c ), 0x01);              //data number 1
-	write_mreg32(0x5001E000 + ( 0x20 ), FLASH_CMD_WRSR);    //INST_REG
+	write_mreg32(0x5001E000 + ( 0x20 ), 0x31/*FLASH_CMD_WRSR*/);    //INST_REG
 	//write_mreg32(0x5001E000 + ( 0x24 ), src_flash_addr);//ADDR_REG
 
 	qspi_enable();
-	write_mreg32(0x5001E000 + ( TX_DAT ), 0x40);
+	//udelay(10);
+	write_mreg32(0x5001E000 + ( TX_DAT ), 0x2);
 
+	udelay(10);
 	while ((read_mreg32(0x5001E000 + 0x06C) & 0x00000001)); //qspi idle
 	qspi_disable();
 
@@ -292,10 +294,10 @@ void qspi_write_flash_test(void)
 	write_mreg32(0x5001E000 + 0x0c, 0x01);  //cs en for start transaction
 	//mdelay(1000);
 	//qspi_enable();
-	write_mreg32(0x5001E000 + TX_DAT, 0x66);
-	write_mreg32(0x5001E000 + TX_DAT, 0x77);
-	write_mreg32(0x5001E000 + TX_DAT, 0x88);
-	write_mreg32(0x5001E000 + TX_DAT, 0x99);
+	write_mreg32(0x5001E000 + TX_DAT, 0x11);
+	write_mreg32(0x5001E000 + TX_DAT, 0x22);
+	write_mreg32(0x5001E000 + TX_DAT, 0x33);
+	write_mreg32(0x5001E000 + TX_DAT, 0x44);
 
 	vs_printf("tx fifo number:0x%x\n", read_mreg32(0x5001E000 + ( 0x5c )) >> 16);
 
@@ -329,10 +331,10 @@ void quad_qspi_write_flash_test(void)
 	write_mreg32(0x5001E000 + 0x08, 0x01);  //QSPI_EN for write data to fifo
 	write_mreg32(0x5001E000 + 0x0c, 0x01);  //cs en for start transaction
 
-	write_mreg32(0x5001E000 + TX_DAT, 0x66);
-	write_mreg32(0x5001E000 + TX_DAT, 0x77);
-	write_mreg32(0x5001E000 + TX_DAT, 0x88);
-	write_mreg32(0x5001E000 + TX_DAT, 0x99);
+	write_mreg32(0x5001E000 + TX_DAT, 0x11);
+	write_mreg32(0x5001E000 + TX_DAT, 0x22);
+	write_mreg32(0x5001E000 + TX_DAT, 0x33);
+	write_mreg32(0x5001E000 + TX_DAT, 0x44);
 
 	vs_printf("tx fifo number:0x%x\n", read_mreg32(0x5001E000 + ( 0x5c )) >> 16);
 
@@ -343,45 +345,6 @@ void quad_qspi_write_flash_test(void)
 	qspi_disable();
 
 	Flash_Checkbusy();
-
-}
-
-
-void quad_qspi_read_flash_test(void)
-{
-
-	qspi_disable();
-
-	write_mreg32(0x5001E000 + ( 0x04 ), 512);                       //BAUD_DIV
-	write_mreg32(0x5001E000 + ( 0x10 ), 0x07000000 | (0x2 << 16));  //QSPI_CFG0:flash read, data shift 8bit
-	write_mreg32(0x5001E000 + ( 0x14 ), 0x19);                      //QSPI_CFG1: Instruction+address+data
-	write_mreg32(0x5001E000 + ( 0x18 ), 0x08180000);
-	write_mreg32(0x5001E000 + ( 0x1c ), 4);
-	write_mreg32(0x5001E000 + ( 0x20 ), FLASH_CMD_QREAD);   //INST_REG
-	write_mreg32(0x5001E000 + ( 0x24 ), 0x0);               //ADDR_REG
-
-
-	write_mreg32(0x5001E000 + 0x08, 0x01);  //QSPI_EN for write data to fifo
-	write_mreg32(0x5001E000 + 0x0c, 0x01);  //cs en for start transaction
-
-	udelay(10);
-
-	unsigned char data1[4];
-	unsigned int i = 0;
-	int len = 4;
-
-	//status: TX_FIFO_NUM + RX_FIFO_NUM
-	//while ((read_mreg32(0x5001E000+0x06C)&0x00000001));//QSPI_STATUS, until spi idle or disable.
-
-	while (len > 0) {
-		while ((read_mreg32(0x5001E000 + 0x05C) & 0xFF) == 0x00); //FIFO_NUM, until have data in RX FIFO.
-		data1[i] = read_mreg32(0x5001E000 + RX_DAT);
-		vs_printf("data1 = 0x%x\n\n", data1[i]);
-		len--;
-		i++;
-	}
-
-	qspi_disable();
 
 }
 
@@ -438,36 +401,86 @@ void qspi_spi_erase_sector2()
 
 }
 
-void qspi_flash_test(void)
+
+void xip_enter(){
+	unsigned int value = 0; 
+
+	write_mreg32(0x5001E000+0x10, 0x1f020000);//QSPI_CFG0: quad spi, 32bit data shift
+	write_mreg32(0x5001E000+0x14, 0x11f); //QSPI_CFG1:  ins+address+continue+dummy+data
+	write_mreg32(0x5001E000+0x18, 0x08180804); //CMD_NUM: ins 8, add 24, continue 8, dummy 4
+	write_mreg32(0x5001E000+0x04, 0x8); //BAUD_DIV
+	write_mreg32(0x5001E000+0x1c, 0x01); //DATA_NUM: 1, 32 bits
+	write_mreg32(0x5001E000+0x20, 0xEB); //INST_REG
+	write_mreg32(0x5001E000+0x24, 0x00000000);//ADDR_REG
+	write_mreg32(0x5001E000+0x28, 0x20); ////CTNU_REG
+		
+	write_mreg32(0x5001E000+0x0c, 0x01);//DEVICE_CS	
+	write_mreg32(0x5001E000+0x08, 0x01);//QSPI_EN;
+
+
+	while ((read_mreg32(0x5001E000+0x05C)&0xFF) == 0x00);//FIFO_NUM, until have data in RX FIFO.
+	while ((read_mreg32(0x5001E000+0x06C)&0x00000001));//QSPI_STATUS, until spi idle or disable.
+	value = read_mreg32(0x5001E000+RX_DAT);//
+	vs_printf("data1 = 0x%x\n\n", value);
+
+	mdelay(1);
+
+	write_mreg32(0x5001E000+0x0c, 0x00);//DEVICE_CS
+	write_mreg32(0x5001E000+0x08, 0x00);//QSPI_EN;
+
+	mdelay(1);
+
+	/* change to continue mode */
+	write_mreg32(0x5001E000+0x14, 0x10f); //QSPI_CFG1:  address+continue+dummy+data
+
+
+	value = read_mreg32(0x50065000+0x98); 
+	value |= 0x01;
+	vs_printf("value = %x\n", value);
+	write_mreg32(0x50065000+0x98, value); 
+
+	asm volatile("dsb");
+
+	vs_printf("flash value 0x10000000: 0x%x\n", *(unsigned int *)(0x10000000));
+
+}
+
+void xip_exit()
 {
-#if 0
-	qspi_test_init();
-	qspi_spi_read_flash_id();
-	qspi_spi_init();
-	qspi_spi_erase_sector(0x0);
-	qspi_read_flash_test();
-	qspi_write_flash_test();
-	qspi_read_flash_test();
-#else
-	//Flash_Disable_Protect();
+
+	unsigned int value = 0; 
+	value = read_mreg32(0x50065000+0x98); 
+	value &= (~0x01U);
+	vs_printf("value = %x\n", value);
+	write_mreg32(0x50065000+0x98, value); 
+
+    /* Reset tran_fmt to any non XIP mode, otherwise hard fault will be triggered when accessing QSPI_EN */
+	write_mreg32(0x5001E000+0x14, 0x10); 
+
+    /* Reset to 8 bits mode */
+	write_mreg32(0x5001E000+0x10, 0x08000000);
+
+    /* Reset QSPI to normal status */
+	write_mreg32(0x5001E000+0x0c, 0x01);//DEVICE_CS	
+	write_mreg32(0x5001E000+0x08, 0x01);//QSPI_EN;
+	udelay(10);
+	write_mreg32(0x5001E000+0x0c, 0x00);//DEVICE_CS
+	write_mreg32(0x5001E000+0x08, 0x00);//QSPI_EN;
+}
+
+void qspi_bm_flash_test(void)
+{
+
 	qspi_test_init();
 	qspi_spi_read_flash_id();
 	Flash_Enable_Write();                                   //enable flash write
 	Flash_Disable_Protect();                                //disable all block protect
-	//Flash_Checkbusy();
 	write_mreg32(0x5001E000 + ( 0x04 ), 0x20);              //BAUD_DIV
 	write_mreg32(0x5001E000 + ( 0x18 ), 0x08180000);        //CMD_NUM
 	qspi_spi_erase_sector2();
-	//qspi_read_flash_test();
-	quad_qspi_read_flash_test();
-	//qspi_write_flash_test();
+	qspi_read_flash_test();
 	quad_qspi_write_flash_test();
-	quad_qspi_read_flash_test();
-	//qspi_read_flash_test();
-#endif
-	//qspi_spi_read_flash_status0();
-	//Flash_Enable_Write();
-	//qspi_spi_read_flash_status0();
-	//Flash_Disable_Write();
-
+	qspi_read_flash_test();
+	xip_enter();
+	xip_exit();
 }

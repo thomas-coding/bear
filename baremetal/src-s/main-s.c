@@ -7,7 +7,7 @@
 #include "board-ns16550.h"
 #include "data-type.h"
 #include "t-ns16550.h"
-#include "t-qspi-flash.h"
+#include "t-qspi-bm-flash.h"
 
 #include "board-pinmux.h"
 #include "board-clock.h"
@@ -15,12 +15,12 @@
 #include "board-reset.h"
 
 extern void tiny_uart_console(void);
-extern void qspi_flash_test(void);
+extern void qspi_bm_flash_test(void);
 
 void *verify_callback[][2] = {
 	{ (void *)tiny_uart_console, "S Tiny console"	   },
 	{ (void *)ns16550_test,	     "S Uart NS16550 test" },
-	{ (void *)qspi_flash_test,   "S qspi flash test"   },
+	{ (void *)qspi_bm_flash_test,   "S qspi baremetal flash test"   },
 	{ 0,			     0			   },
 };
 

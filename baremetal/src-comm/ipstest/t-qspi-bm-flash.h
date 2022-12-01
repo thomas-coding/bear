@@ -1,6 +1,6 @@
 
-#ifndef __T_QSPI_FLASH_H__
-#define __T_QSPI_FLASH_H__
+#ifndef __T_QSPI_BM_FLASH_H__
+#define __T_QSPI_BM_FLASH_H__
 
 #include "common.h"
 
@@ -301,6 +301,6 @@ struct norflash_dev_com {
 };
 
 
-void qspi_flash_test(void);
+void qspi_bm_flash_test(void);
 
-#endif /* __T_QSPI_FLASH_H__ */
+#endif /* __T_QSPI_BM_FLASH_H__ */
