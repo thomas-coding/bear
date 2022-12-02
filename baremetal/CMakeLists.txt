@@ -14,6 +14,7 @@ include_directories(./src-s/core)
 include_directories(./src-s/board/mpu)
 include_directories(./src-comm/common)
 include_directories(./src-comm/ips/ns16550)
+include_directories(./src-comm/ips/qspi-flash)
 include_directories(./src-comm/board/ns16550)
 include_directories(./src-comm/board/reset)
 include_directories(./src-comm/board/clock)
@@ -49,6 +50,7 @@ set(SRC_LIST
     ${CMAKE_HOME_DIRECTORY}/src-comm/board/pinmux/board-pinmux.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/common/tiny_command.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ips/ns16550/ns16550.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ips/qspi-flash/qspi-flash.c
     )
 
 # Test
@@ -56,6 +58,7 @@ set(SRC_LIST
     ${SRC_LIST}
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-ns16550.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-qspi-bm-flash.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-qspi-flash.c
     )
 
 # Target
