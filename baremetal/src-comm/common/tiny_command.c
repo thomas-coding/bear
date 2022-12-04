@@ -4,14 +4,17 @@
 #include "stdarg.h"
 
 #include "tiny_command.h"
+#include "qspi-flash.h"
 
-#define DEFAULT_BAUDRATE	UART_BAUD_115200
+#define DEFAULT_BAUDRATE        UART_BAUD_115200
 
 static unsigned long tc_strtoul(const char *cp, char **endp,
-					unsigned int base);
+				unsigned int base);
 
 static void *map_sysmem(unsigned long vaddr, unsigned long len);
 static void unmap_sysmem(void *paddr);
+
+extern void memory_hex_dump(char* start, uint8_t *buffer, uint32_t len);
 
 /* Command handler */
 static int do_mw(struct tiny_cmd *cmd, int argc, char *argv[]);
@@ -23,31 +26,78 @@ static int do_load(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_go(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_exit(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_help(struct tiny_cmd *cmd, int argc, char *argv[]);
+static int do_flash(struct tiny_cmd *cmd, int argc, char *argv[]);
 
 /* Command table */
 struct tiny_cmd tc_cmd_tb[] = {
-	TINY_CMD("mw", 3, 4, do_mw,
-		"mw addr value [width]         - Memory Write One Unit in Width"),
-	TINY_CMD("mr", 2, 3, do_mr,
-		"mr addr [width]               - Memory Read One Unit in Width"),
-	TINY_CMD("md", 3, 3, do_md,
-		"md addr len                   - Memory Dump in words"),
-	TINY_CMD("cp", 4, 4, do_cp,
-		"cp dst src len                - Memory copy in bytes"),
-	TINY_CMD("cmp", 4, 4, do_cmp,
-		"cmp addr0 addr1 len           - Memory Compare"),
-	TINY_CMD("load", 2, 3, do_load,
-		"load addr [baudrate]          - UART(kermit) Load"),
-	TINY_CMD("go", 2, 2, do_go,
-		"go addr                       - Jump to run"),
-	TINY_CMD("exit", 1, 1, do_exit,
-		"exit                          - Exit console"),
-	TINY_CMD("help", 1, 2, do_help,
-		"help                          - Help information"),
+	TINY_CMD("mw",								    3, 4, do_mw,
+		 "mw addr value [width]         - Memory Write One Unit in Width"),
+	TINY_CMD("mr",								    2, 3, do_mr,
+		 "mr addr [width]               - Memory Read One Unit in Width"),
+	TINY_CMD("md",								    3, 3, do_md,
+		 "md addr len                   - Memory Dump in words"),
+	TINY_CMD("cp",								    4, 4, do_cp,
+		 "cp dst src len                - Memory copy in bytes"),
+	TINY_CMD("cmp",								    4, 4, do_cmp,
+		 "cmp addr0 addr1 len           - Memory Compare"),
+	TINY_CMD("load",							    2, 3, do_load,
+		 "load addr [baudrate]          - UART(kermit) Load"),
+	TINY_CMD("flash",							    4, 5, do_flash,
+		 "flash read/erase/write flash_addr len src      		- flash ops"),
+	TINY_CMD("go",								    2, 2, do_go,
+		 "go addr                       - Jump to run"),
+	TINY_CMD("exit",							    1, 1, do_exit,
+		 "exit                          - Exit console"),
+	TINY_CMD("help",							    1, 2, do_help,
+		 "help                          - Help information"),
 	/* Add new command implementation here */
 };
 
-#define TC_CMD_TB_LEN	ARRAY_SIZE(tc_cmd_tb)
+#define TC_CMD_TB_LEN   ARRAY_SIZE(tc_cmd_tb)
+
+/* flash read/write addr len */
+#define DO_FLASH_READ_BUFFER_SIZE 1024
+int do_flash(struct tiny_cmd *cmd, int argc, char *argv[])
+{
+	u32 addr, src = 0;
+	unsigned long len = 0;
+
+	struct qspi_flash_device device;
+	uint8_t read_buffer[DO_FLASH_READ_BUFFER_SIZE];
+
+	addr = tc_strtoul(argv[2], NULL, 16);
+	len = tc_strtoul(argv[3], NULL, 16);
+
+	device.flash_base = 0x10000000;
+	device.ops = &qspi_flash_ops;
+
+	if (!strncmp(argv[1], "read", 4)) {
+		if (len > DO_FLASH_READ_BUFFER_SIZE) {
+			vs_printf("mxx read size: %d\n", DO_FLASH_READ_BUFFER_SIZE);
+			return RET_CMD_EXIT;
+		}
+		/* read data */
+		vs_printf("flash %s addr:0x%x, len:0x%x\n", argv[1], addr, len);
+		device.ops->qspi_flash_read(&device, addr, read_buffer, len);
+		memory_hex_dump("do flash read", read_buffer, len);
+	} else if (!strncmp(argv[1], "erase", 5)) {
+		vs_printf("flash %s addr:0x%x, len:0x%x\n", argv[1], addr, len);
+		device.ops->qspi_flash_erase(&device, addr, len);
+	} else if (!strncmp(argv[1], "write", 5)) {
+		src = tc_strtoul(argv[4], NULL, 16);
+		vs_printf("flash %s addr:0x%x, len:0x%x src:0x%x\n", argv[1], addr, len, src);
+		device.ops->qspi_flash_write(&device, (u8 *)src, addr, len);
+	} else {
+		vs_printf("invalid command\n");
+		return RET_CMD_EXIT;
+	}
+
+	vs_printf("flash %s done\n", argv[1]);
+
+	return RET_CMD_DONE;
+}
+
+
 
 int do_cp(struct tiny_cmd *cmd, int argc, char *argv[])
 {
@@ -186,13 +236,12 @@ extern void kermit_load(unsigned long offset, unsigned int baudrate);
 unsigned int baudrate_reconfig(unsigned int baudrate)
 {
 	tc_pr("## Switch baudrate to %d bps and press ESC ...\n",
-		baudrate);
+	      baudrate);
 
 	/* To avoid scrambled code */
-	while (1) {
+	while (1)
 		if (console_getc() == 0x1b)
 			break;
-	}
 
 	/* Todo : reconfig baudrate */
 	ns16550_config_def.baud_rate = baudrate;
@@ -269,10 +318,10 @@ static int do_cmp(struct tiny_cmd *cmd, int argc, char *argv[])
 
 	if (i == bytes)
 		tc_pr("0x%lx is same as 0x%lx within %d bytes.\n",
-			addr0, addr1, bytes);
+		      addr0, addr1, bytes);
 	else
 		tc_pr("Difference between 0x%lx(0x%02x) and 0x%lx(0x%02x)\n",
-			addr0 + i, *buf0, addr1 + i, *buf1);
+		      addr0 + i, *buf0, addr1 + i, *buf1);
 
 	return RET_CMD_DONE;
 }
@@ -283,7 +332,7 @@ struct tiny_cmd *find_cmd(const char *name)
 
 	for (i = 0; i < TC_CMD_TB_LEN; i++) {
 		if (!strncmp(name, tc_cmd_tb[i].name,
-				strlen(tc_cmd_tb[i].name)))
+			     strlen(tc_cmd_tb[i].name)))
 			break;
 	}
 
@@ -301,9 +350,8 @@ static const char *parse_int(const char *s, unsigned int *base)
 				*base = 16;
 			else
 				*base = 8;
-		} else {
+		} else
 			*base = 10;
-		}
 	}
 
 	if (*base == 16 && s[0] == '0' && tc_tolower(s[1]) == 'x')
@@ -321,9 +369,9 @@ static unsigned long tc_strtoul(const char *cp, char **endp,
 	cp = parse_int(cp, &base);
 
 	while (tc_isxdigit(*cp) &&
-		(value = tc_isdigit(*cp) ? *cp-'0' : (tc_islower(*cp)
-		? tc_toupper(*cp) : *cp)-'A'+10) < base) {
-		result = result*base + value;
+	       (value = tc_isdigit(*cp) ? *cp - '0' : (tc_islower(*cp)
+		? tc_toupper(*cp) : *cp) - 'A' + 10) < base) {
+		result = result * base + value;
 		cp++;
 	}
 
