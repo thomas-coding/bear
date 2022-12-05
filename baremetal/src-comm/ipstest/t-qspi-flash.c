@@ -97,7 +97,7 @@ void qspi_xip_enter_test(void)
 	device.ops->qspi_flash_xip_enter(&device);
 
 	/* read flash data */
-	vs_printf("flash value 0x10000000: 0x%x\n", *(unsigned int *)(0x10000000));
+	vs_printf("flash value 0x10000000: 0x%08x\n", *(unsigned int *)(0x10000000));
 
 	/* exit xip mode */
 	device.ops->qspi_flash_xip_exit(&device);
@@ -108,11 +108,13 @@ void qspi_xip_enter_test(void)
 void qspi_flash_test(void)
 {
 
+
 	qspi_flash_read_id_test();
-	qspi_flash_read_test();
+	//qspi_flash_read_test();
 	//qspi_erase_test();
 	//qspi_flash_read_test();
 	qspi_flash_write_test();
+	//qspi_flash_read_test();
 	//qspi_xip_enter_test();
 
 	//qspi_flash_read_test();

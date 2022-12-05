@@ -30,25 +30,25 @@ static int do_flash(struct tiny_cmd *cmd, int argc, char *argv[]);
 
 /* Command table */
 struct tiny_cmd tc_cmd_tb[] = {
-	TINY_CMD("mw",								    3, 4, do_mw,
+	TINY_CMD("mw",											 3,								 4, do_mw,
 		 "mw addr value [width]         - Memory Write One Unit in Width"),
-	TINY_CMD("mr",								    2, 3, do_mr,
+	TINY_CMD("mr",											 2,								 3, do_mr,
 		 "mr addr [width]               - Memory Read One Unit in Width"),
-	TINY_CMD("md",								    3, 3, do_md,
+	TINY_CMD("md",											 3,								 3, do_md,
 		 "md addr len                   - Memory Dump in words"),
-	TINY_CMD("cp",								    4, 4, do_cp,
+	TINY_CMD("cp",											 4,								 4, do_cp,
 		 "cp dst src len                - Memory copy in bytes"),
-	TINY_CMD("cmp",								    4, 4, do_cmp,
+	TINY_CMD("cmp",											 4,								 4, do_cmp,
 		 "cmp addr0 addr1 len           - Memory Compare"),
-	TINY_CMD("load",							    2, 3, do_load,
+	TINY_CMD("load",										 2,								 3, do_load,
 		 "load addr [baudrate]          - UART(kermit) Load"),
-	TINY_CMD("flash",							    4, 5, do_flash,
-		 "flash read/erase/write flash_addr len src      		- flash ops"),
-	TINY_CMD("go",								    2, 2, do_go,
+	TINY_CMD("flash",										 3,								 5, do_flash,
+		 "flash read/erase/write flash_addr len src  or flash xip enter/exit    		- flash ops"),
+	TINY_CMD("go",											 2,								 2, do_go,
 		 "go addr                       - Jump to run"),
-	TINY_CMD("exit",							    1, 1, do_exit,
+	TINY_CMD("exit",										 1,								 1, do_exit,
 		 "exit                          - Exit console"),
-	TINY_CMD("help",							    1, 2, do_help,
+	TINY_CMD("help",										 1,								 2, do_help,
 		 "help                          - Help information"),
 	/* Add new command implementation here */
 };
@@ -65,8 +65,10 @@ int do_flash(struct tiny_cmd *cmd, int argc, char *argv[])
 	struct qspi_flash_device device;
 	uint8_t read_buffer[DO_FLASH_READ_BUFFER_SIZE];
 
-	addr = tc_strtoul(argv[2], NULL, 16);
-	len = tc_strtoul(argv[3], NULL, 16);
+	if (strncmp(argv[1], "xip", 3)) {
+		addr = tc_strtoul(argv[2], NULL, 16);
+		len = tc_strtoul(argv[3], NULL, 16);
+	}
 
 	device.flash_base = 0x10000000;
 	device.ops = &qspi_flash_ops;
@@ -76,7 +78,6 @@ int do_flash(struct tiny_cmd *cmd, int argc, char *argv[])
 			vs_printf("mxx read size: %d\n", DO_FLASH_READ_BUFFER_SIZE);
 			return RET_CMD_EXIT;
 		}
-		/* read data */
 		vs_printf("flash %s addr:0x%x, len:0x%x\n", argv[1], addr, len);
 		device.ops->qspi_flash_read(&device, addr, read_buffer, len);
 		memory_hex_dump("do flash read", read_buffer, len);
@@ -87,6 +88,18 @@ int do_flash(struct tiny_cmd *cmd, int argc, char *argv[])
 		src = tc_strtoul(argv[4], NULL, 16);
 		vs_printf("flash %s addr:0x%x, len:0x%x src:0x%x\n", argv[1], addr, len, src);
 		device.ops->qspi_flash_write(&device, (u8 *)src, addr, len);
+	} else if (!strncmp(argv[1], "xip", 3)) {
+		if (!strncmp(argv[2], "enter", 5)) {
+			vs_printf("flash enter xip mode\n");
+			device.ops->qspi_flash_xip_enter(&device);
+		} else if (!strncmp(argv[2], "exit", 4)) {
+			vs_printf("flash exit xip mode\n");
+			device.ops->qspi_flash_xip_exit(&device);
+		} else {
+			vs_printf("invalid command\n");
+			return RET_CMD_EXIT;
+		}
+
 	} else {
 		vs_printf("invalid command\n");
 		return RET_CMD_EXIT;

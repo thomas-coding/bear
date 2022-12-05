@@ -257,10 +257,10 @@
 
 
 // ----------------------- default config ------------------------------
-/* There is something wrong used 384/8 = 48M when read status reg
+/* There is something wrong used 384/8 = 48M when read status reg (or write)
  * So set defalut 16 for 384/16=24M
  */
-#define QSPI_DFAULT_DIV	(16)
+#define QSPI_DFAULT_DIV (16)
 
 #define QSPI_USOD_FIFO_DEPTH  (16)
 
