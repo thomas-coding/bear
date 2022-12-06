@@ -59,6 +59,8 @@ set(SRC_LIST
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-ns16550.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-qspi-bm-flash.c
     ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-qspi-flash.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/t-crypto-bm.c
+    ${CMAKE_HOME_DIRECTORY}/src-comm/ipstest/crypto_test_data.c
     )
 
 # Target

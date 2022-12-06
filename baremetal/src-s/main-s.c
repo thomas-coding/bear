@@ -17,13 +17,15 @@
 
 extern void tiny_uart_console(void);
 extern void qspi_bm_flash_test(void);
+extern void crypto_bm_test(void);
 
 void *verify_callback[][2] = {
-	{ (void *)tiny_uart_console,  "S Tiny console"				    },
-	{ (void *)ns16550_test,	      "S Uart NS16550 test"			    },
-	{ (void *)qspi_bm_flash_test, "S qspi baremetal flash test"		    },
-	{ (void *)qspi_flash_test,    "S qspi flash test"			    },
-	{ 0,			      0						    },
+	{ (void *)tiny_uart_console,  "S Tiny console"							     },
+	{ (void *)ns16550_test,	      "S Uart NS16550 test"						     },
+	{ (void *)qspi_bm_flash_test, "S qspi baremetal flash test"					     },
+	{ (void *)qspi_flash_test,    "S qspi flash test"						     },
+	{ (void *)crypto_bm_test,     "S crypto baremeatl test"						     },
+	{ 0,			      0									     },
 };
 
 void board_init(void)
