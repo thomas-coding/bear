@@ -9,6 +9,9 @@
 #include "mbedtls/sha256.h"
 
 #include "psa/crypto.h"
+#include "mbedtls/memory_buffer_alloc.h"
+
+uint8_t mbedtls_buf[20 * 1024];
 
 void mbedtls_hash_md5_part_test(void) {
 	int i, ret;
@@ -142,8 +145,7 @@ void mbedtls_hash_test(void)
 
 	mbedtls_hash_sha1_test();
 	mbedtls_sha1_self_test(1);
-	/* test used alloc, not in baremetal*/
-	//mbedtls_sha256_self_test(1);
+	mbedtls_sha256_self_test(1);
 
 	psa_sha256_test();
 }
@@ -155,9 +157,14 @@ void mbed_exit(int status) {
 	}
 }
 
-void mbedtls_test(void)
-{
+void mbedtls_init(void) {
 	mbedtls_platform_set_printf((int (*)(const char *, ...))console_printf);
 	mbedtls_platform_set_exit(mbed_exit);
+	mbedtls_memory_buffer_alloc_init( mbedtls_buf, sizeof(mbedtls_buf) );
+}
+
+void mbedtls_test(void)
+{
+	mbedtls_init();
 	mbedtls_hash_test();
 }
