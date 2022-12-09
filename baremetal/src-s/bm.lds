@@ -4,7 +4,7 @@
 
 /* Secure sram 128K */
 CONFIG_SRAM_S_BASE = 0x20200000;
-CONFIG_SRAM_S_SIZE = 0x20000;
+CONFIG_SRAM_S_SIZE = 0x70000;
 
 
 /* Non-Secure Callable Configuration */
