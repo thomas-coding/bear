@@ -19,8 +19,8 @@ __RAM_SIZE = (CONFIG_SRAM_S_SIZE - __SG_SIZE - 0x40);
 __DETERMINE_ADDR = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE - 0x40);
 
 /* Stack / Heap Configuration */
-__STACK_SIZE = 0x00000e00;
-__PSTACK_SIZE = 0x00000e00;
+__STACK_SIZE = 0x00002000;
+__PSTACK_SIZE = 0x00002000;
 __HEAP_SIZE  = 0x00000C00;
 
 MEMORY
@@ -45,6 +45,7 @@ SECTIONS
 	.text :
 	{
 		KEEP(*(.vectors))
+		KEEP(*(.handler))
 		*(.text*)
 
 		KEEP(*(.init))

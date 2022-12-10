@@ -88,6 +88,11 @@ extern uint8_t hmac_sha2_256_key[40];
 extern uint8_t hmac_sha2_256_msg[128];
 extern uint8_t hmac_sha2_256_mac[32];
 
+extern unsigned char mypublic_pem[];
+extern unsigned int mypublic_pem_len;
+extern unsigned char myprivate_pem[];
+extern unsigned int myprivate_pem_len;
+
 extern uint8_t rsaes_oaep_rsa_modulus[128];
 extern uint8_t rsaes_oaep_rsa_priv_exponent[128];
 extern uint8_t rsaes_oaep_rsa_pub_exponent[3];

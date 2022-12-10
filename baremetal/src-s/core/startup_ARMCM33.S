@@ -59,7 +59,8 @@ __Vectors_End:
 	.size __Vectors, . - __Vectors
 
 	.thumb
-	.section .text
+#	.section .text
+	.section .handler
 	.align 2
 
 	.thumb_func
