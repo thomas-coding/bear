@@ -68,6 +68,11 @@ __Vectors_End:
 	.globl Reset_Handler
 	.fnstart
 Reset_Handler:
+	/* Set vector table */
+	ldr r0, =0xE000ED08
+	ldr r1, =__Vectors
+	str r1, [r0]
+
 	ldr r0, =__StackLimit
 	msr msplim, r0
 
