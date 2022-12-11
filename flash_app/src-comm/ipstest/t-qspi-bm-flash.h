@@ -1,96 +1,13 @@
 
-#ifndef __QSPI_FLASH_H__
-#define __QSPI_FLASH_H__
+#ifndef __T_QSPI_BM_FLASH_H__
+#define __T_QSPI_BM_FLASH_H__
 
-#include "data-type.h"
+#include "common.h"
 
-
-// ------------------------ flash ----------------------------
-/*enable Quad I/O*/
-#define FLASH_CMD_EQIO                  0x38
-/*disable Quad I/O*/
-#define FLASH_CMD_DSQIO                 0xff
-/*read status register(7 : 0)*/
-#define FLASH_CMD_RSRL                  0x05
-/*read status register(15 : 8)*/
-#define FLASH_CMD_RSRH                  0x35
-/*1 x I/O*/
-#define FLASH_CMD_READ                  0x03
-/*fast read data*/
-#define FLASH_CMD_FASTREAD              0x0b
-/*1In/2 Out fast read*/
-#define FLASH_CMD_DREAD                 0x3b
-/*2 x I/O*/
-#define FLASH_CMD_2READ                 0xbb
-/*1In/4 Out fast read*/
-#define FLASH_CMD_QREAD                 0x6b
-/*4 x I/O*/
-#define FLASH_CMD_4READ                 0xeb
-
-/*Write cmd*/
-/*write Enable*/
-#define FLASH_CMD_WREN                  0x06
-/*write Disable*/
-#define FLASH_CMD_WRDI                  0x04
-/*write status register(7 : 0)*/
-#define FLASH_CMD_WRSR                  0x01
-/*page program*/
-#define FLASH_CMD_PP                    0x02
-/*quad page program*/
-#define FLASH_CMD_QPP                   0x32
-/*dual page program*/
-#define FLASH_CMD_DPP                   0xa2
-
-/*erase cmd*/
-/*sector Erase*/
-#define FLASH_CMD_SE                    0x20
-/*block Erase 32kb*/
-#define FLASH_CMD_BE32K                 0x52
-/*block Erase 64k*/
-#define FLASH_CMD_BE                    0xd8
-/*chip Erase*/
-#define FLASH_CMD_CE                    0xc7
-
-/*reset cmd*/
-/*reset Enable*/
-#define FLASH_CMD_RSTEN                 0x66
-/*Reset Memory*/
-#define FLASH_CMD_RST                   0x99
-
-/*read id cmd*/
-#define FLASH_CMD_REMS                  0x90
-#define FLASH_CMD_2REMS                 0x92
-#define FLASH_CMD_4REMS                 0x94
-#define FLASH_CMD_READID                0x9f
-
-/*Read Status Registers*/
-#define FLASH_CMD_RSRS                  0x65
-/*Write Status Registers*/
-#define FLASH_CMD_WSRS                  0x71
-
-
-
-/*flash status*/
-#define FLASH_STS_QE                    (1 << 9)
-#define FLASH_STS_SRP1                  (1 << 8)
-#define FLASH_STS_SRP0                  (1 << 7)
-#define FLASH_STS_BP4                   (1 << 6)
-#define FLASH_STS_BP3                   (1 << 5)
-#define FLASH_STS_BP2                   (1 << 4)
-#define FLASH_STS_BP1                   (1 << 3)
-#define FLASH_STS_BP0                   (1 << 2)
-#define FLASH_STS_WEL                   (1 << 1)
-#define FLASH_STS_WIP                   (1 << 0)
-
-#define FLASH_BLOCK_SIZE                (0x10000)
-#define FLASH_SECTOR_SIZE               (0x1000)
-#define FLASH_PAGE_SIZE                 (0x100)
-#define FLASH_MAX_READ_SIZE             (0x10000)
-
-
-// ----------------------- qspi register ------------------------------
+#if 0
+// ----------------------- spi ------------------------------
 // config XIP register
-#define QSPI_REG_BASE 0x5001E000
+#define XIP_REG_BASE 0x5001E000
 #define QSPI_IRQ_NUM      23
 
 #define VERSION_ID                      0x00
@@ -127,11 +44,11 @@
 #define ADDR_DTR_EN                                 (1 << 14)
 #define CTNU_DTR_EN                                 (1 << 13)
 #define INST_DTR_EN                                 (1 << 12)
-//instruction addresstransfer with standard mode, data transfer with specified mode in STD_SEL.
+//instruction��addresstransfer with standard mode, data transfer with specified mode in STD_SEL.
 #define CMD_FORMAT_0                                (0 << 8)
 //instruction transfer with standard mode�� and address and data transfer with specified mode in STD_SEL.
 #define CMD_FORMAT_1                                (1 << 8)
-//instruction address and data transfer with specified mode in STD_SEL
+//instruction��address and data transfer with specified mode in STD_SEL
 #define CMD_FORMAT_2                                (2 << 8)
 //reserved
 #define CMD_FORMAT_RESV                             (3 << 8)
@@ -256,51 +173,136 @@
 #define QSPI_TRIG_LVL            (8)
 
 
-// ----------------------- default config ------------------------------
-/* There is something wrong used 384/8 = 48M when read status reg (or write)
- * So set defalut 16 for 384/16=24M
- */
-#define QSPI_DFAULT_DIV (16)
+// ------------------------ flash ----------------------------
+/*enable Quad I/O*/
+#define FLASH_CMD_EQIO                  0x38
+/*disable Quad I/O*/
+#define FLASH_CMD_DSQIO                 0xff
+/*read status register(7 : 0)*/
+#define FLASH_CMD_RSRL                  0x05
+/*read status register(15 : 8)*/
+#define FLASH_CMD_RSRH                  0x35
+/*1 x I/O*/
+#define FLASH_CMD_READ                  0x03
+/*fast read data*/
+#define FLASH_CMD_FASTREAD              0x0b
+/*1In/2 Out fast read*/
+#define FLASH_CMD_DREAD                 0x3b
+/*2 x I/O*/
+#define FLASH_CMD_2READ                 0xbb
+/*1In/4 Out fast read*/
+#define FLASH_CMD_QREAD                 0x6b
+/*4 x I/O*/
+#define FLASH_CMD_4READ                 0xeb
 
-#define QSPI_USOD_FIFO_DEPTH  (16)
+/*Write cmd*/
+/*write Enable*/
+#define FLASH_CMD_WREN                  0x06
+/*write Disable*/
+#define FLASH_CMD_WRDI                  0x04
+/*write status register(7 : 0)*/
+#define FLASH_CMD_WRSR                  0x01
+/*page program*/
+#define FLASH_CMD_PP                    0x02
+/*quad page program*/
+#define FLASH_CMD_QPP                   0x32
+/*dual page program*/
+#define FLASH_CMD_DPP                   0xa2
 
-/* TODO: some issue for use tx fifo, set 16 */
-#define TRANSATION_MAX_BYTES 16//(256)
+/*erase cmd*/
+/*sector Erase*/
+#define FLASH_CMD_SE                    0x20
+/*block Erase 32kb*/
+#define FLASH_CMD_BE32K                 0x52
+/*block Erase 64k*/
+#define FLASH_CMD_BE                    0xd8
+/*chip Erase*/
+#define FLASH_CMD_CE                    0xc7
+
+/*reset cmd*/
+/*reset Enable*/
+#define FLASH_CMD_RSTEN                 0x66
+/*Reset Memory*/
+#define FLASH_CMD_RST                   0x99
+
+/*read id cmd*/
+#define FLASH_CMD_REMS                  0x90
+#define FLASH_CMD_2REMS                 0x92
+#define FLASH_CMD_4REMS                 0x94
+#define FLASH_CMD_READID                0x9f
+
+/*Read Status Registers*/
+#define FLASH_CMD_RSRS                  0x65
+/*Write Status Registers*/
+#define FLASH_CMD_WSRS                  0x71
 
 
 
-// ----------------------- struct ------------------------------
-struct qspi_config {
-	u32 divide;
-	u32 config0;
-	u32 config1;
-	u32 config2;
-	u32 data_number;
-	u32 instruction;
-	u32 address;
-	u32 ctun;
+/*flash status*/
+#define FLASH_STS_QE                    (1 << 9)
+#define FLASH_STS_SRP1                  (1 << 8)
+#define FLASH_STS_SRP0                  (1 << 7)
+#define FLASH_STS_BP4                   (1 << 6)
+#define FLASH_STS_BP3                   (1 << 5)
+#define FLASH_STS_BP2                   (1 << 4)
+#define FLASH_STS_BP1                   (1 << 3)
+#define FLASH_STS_BP0                   (1 << 2)
+#define FLASH_STS_WEL                   (1 << 1)
+#define FLASH_STS_WIP                   (1 << 0)
+
+#define FLASH_BLOCK_SIZE                (0x10000)
+#define FLASH_SECTOR_SIZE               (0x1000)
+#define FLASH_PAGE_SIZE                 (0x100)
+#define FLASH_MAX_READ_SIZE             (0x10000)
+
+#define NOR_MAX_ID_LEN                  0x6
+
+enum read_mode {
+	STA_MODE = 0,
+	DIO_MODE,
+	QOF_MODE,
 };
 
-
-struct qspi_flash_device {
-	uint32_t flash_base;
-	struct qspi_flash_operation *ops;
+enum write_mode {
+	PP_MODE = 0,
+	QPP_MODE
 };
 
-struct qspi_flash_operation {
-	u32 (*qspi_flash_erase)(void *dev, u32 addr, u32 len);
-	void (*qspi_flash_read)(void *dev, u32 src_addr, u8 *dest_buff, u32 len);
-	void (*qspi_flash_write_le)(void *dev, u8 *src_buff, u32 dest_addr, u32 len);
-	void (*qspi_flash_write)(void *dev, u8 *src_buff, u32 dest_addr, u32 len);
-	u32 (*qspi_flash_probe)(void *dev, u8 index);
-	void (*qspi_flash_read_id)(void *dev);
-	void (*qspi_flash_check_busy)(void *dev);
-	void (*qspi_flash_write_en)(void *dev);
-	void (*qspi_flash_write_dis)(void *dev);
-	void (*qspi_flash_xip_enter)(void *dev);
-	void (*qspi_flash_xip_exit)(void *dev);
+struct op_data {
+	u32 tx_len;
+	u32 rx_len;
+	u32 cmd_len;
+	void *dout;
+	void *din;
+	void *cmd_meg;
 };
-extern struct qspi_flash_operation qspi_flash_ops;
+
+struct norflash_info {
+	char *name;
+	u8 id[NOR_MAX_ID_LEN];
+	u8 id_len;
+	u32 sectorsize;
+	u32 n_sector;
+	u32 options;
+};
+
+struct norflash_dev_com {
+	u8 cmd;
+	void *init;
+	void *dma;
+	struct norflash_info *chip;
+	struct op_data op;
+	enum write_mode wmode;
+	enum read_mode rmode;
+	void (*spi_init)(struct norflash_dev_com *nor, u8 index);
+	int (*spi_transmit_one_meg)(struct norflash_dev_com *nor);
+	u8 use_dma;
+	u8 use_irq;
+	u8 cs;
+};
+#endif
 
 
-#endif /* #ifndef __QSPI_FLASH_H__ */
+void qspi_bm_flash_test(void);
+
+#endif /* __T_QSPI_BM_FLASH_H__ */

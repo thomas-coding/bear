@@ -27,117 +27,33 @@ static int do_go(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_exit(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_help(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_flash(struct tiny_cmd *cmd, int argc, char *argv[]);
-static int do_boot_app(struct tiny_cmd *cmd, int argc, char *argv[]);
-static int do_download_and_go(struct tiny_cmd *cmd, int argc, char *argv[]);
-
-static int boot_app(uint32_t addr);
 
 /* Command table */
 struct tiny_cmd tc_cmd_tb[] = {
-	TINY_CMD("mw",											       3,										    4,								    do_mw,
+	TINY_CMD("mw",											 3,								 4, do_mw,
 		 "mw addr value [width]         - Memory Write One Unit in Width"),
-	TINY_CMD("mr",											       2,										    3,								    do_mr,
+	TINY_CMD("mr",											 2,								 3, do_mr,
 		 "mr addr [width]               - Memory Read One Unit in Width"),
-	TINY_CMD("md",											       3,										    3,								    do_md,
+	TINY_CMD("md",											 3,								 3, do_md,
 		 "md addr len                   - Memory Dump in words"),
-	TINY_CMD("cp",											       4,										    4,								    do_cp,
+	TINY_CMD("cp",											 4,								 4, do_cp,
 		 "cp dst src len                - Memory copy in bytes"),
-	TINY_CMD("cmp",											       4,										    4,								    do_cmp,
+	TINY_CMD("cmp",											 4,								 4, do_cmp,
 		 "cmp addr0 addr1 len           - Memory Compare"),
-	TINY_CMD("load",										       2,										    3,								    do_load,
+	TINY_CMD("load",										 2,								 3, do_load,
 		 "load addr [baudrate]          - UART(kermit) Load"),
-	TINY_CMD("flash",										       3,										    5,								    do_flash,
+	TINY_CMD("flash",										 3,								 5, do_flash,
 		 "flash read/erase/write flash_addr len src  or flash xip enter/exit    		- flash ops"),
-	TINY_CMD("go",											       2,										    2,								    do_go,
+	TINY_CMD("go",											 2,								 2, do_go,
 		 "go addr                       - Jump to run"),
-	TINY_CMD("exit",										       1,										    1,								    do_exit,
+	TINY_CMD("exit",										 1,								 1, do_exit,
 		 "exit                          - Exit console"),
-	TINY_CMD("boot",										       2,										    2,								    do_boot_app,
-		 "boot addr                          - boot flash app from address"),
-	TINY_CMD("dgo",											       4,										    4,								    do_download_and_go,
-		 "dgo src dst size                          - download from sram(src) to flash(dst) and run"),
-	TINY_CMD("help",										       1,										    2,								    do_help,
+	TINY_CMD("help",										 1,								 2, do_help,
 		 "help                          - Help information"),
 	/* Add new command implementation here */
 };
 
 #define TC_CMD_TB_LEN   ARRAY_SIZE(tc_cmd_tb)
-
-/* down load image to flash and go
- * src - sram address
- * dst - flash address
- * size - image size
- */
-int do_download_and_go(struct tiny_cmd *cmd, int argc, char *argv[])
-{
-	u32 src = 0;
-	u32 dst = 0;
-	unsigned long len = 0;
-	struct qspi_flash_device device;
-
-	src = tc_strtoul(argv[1], NULL, 16);
-	dst = tc_strtoul(argv[2], NULL, 16);
-	len = tc_strtoul(argv[3], NULL, 16);
-
-	device.flash_base = 0x10000000;
-	device.ops = &qspi_flash_ops;
-
-	/* Exit xip, erase flash and copy image from sram to flash*/
-	device.ops->qspi_flash_xip_exit(&device);
-	mdelay(100);
-	device.ops->qspi_flash_erase(&device, dst, len);
-	mdelay(100);
-	device.ops->qspi_flash_write_le(&device, (u8 *)src, dst, len);
-	mdelay(100);
-
-	/* Enter xip and run flash app */
-	device.ops->qspi_flash_xip_enter(&device);
-	boot_app(dst);
-}
-
-/* This function jumps to the application image. */
-static void start_app(uint32_t pc __attribute__((unused)), uint32_t sp __attribute__((unused)))
-{
-	__asm volatile (
-
-		/* Set stack pointer. */
-		"MSR     MSP, R1                         \n"
-		"DSB                                     \n"
-		"ISB                                     \n"
-
-		/* Branch to application. */
-		"BX      R0                              \n"
-		);
-}
-
-int boot_app(uint32_t addr)
-{
-	/* The vector table is located after the header. */
-	uint32_t vector_table = (uint32_t)(addr);
-
-	uint32_t * app_image = (uint32_t *)vector_table;
-	uint32_t app_sp = app_image[0];
-	uint32_t app_pc = app_image[1];
-
-	vs_printf("Vector Table: 0x%x. PC=0x%x, SP=0x%x\n", (unsigned int)vector_table, (unsigned int)app_pc,
-		  (unsigned int)app_sp);
-
-	/* Set the applications vector table. */
-	SCB->VTOR = vector_table;
-
-	__set_MSPLIM(0);
-
-	/* Set SP and branch to PC. */
-	start_app(app_pc, app_sp);
-}
-
-int do_boot_app(struct tiny_cmd *cmd, int argc, char *argv[])
-{
-	u32 addr;
-
-	addr = tc_strtoul(argv[1], NULL, 16);
-	boot_app(addr);
-}
 
 /* flash read/write addr len */
 #define DO_FLASH_READ_BUFFER_SIZE 1024
@@ -171,8 +87,7 @@ int do_flash(struct tiny_cmd *cmd, int argc, char *argv[])
 	} else if (!strncmp(argv[1], "write", 5)) {
 		src = tc_strtoul(argv[4], NULL, 16);
 		vs_printf("flash %s addr:0x%x, len:0x%x src:0x%x\n", argv[1], addr, len, src);
-		/* Use the little endian, it will change the order */
-		device.ops->qspi_flash_write_le(&device, (u8 *)src, addr, len);
+		device.ops->qspi_flash_write(&device, (u8 *)src, addr, len);
 	} else if (!strncmp(argv[1], "xip", 3)) {
 		if (!strncmp(argv[2], "enter", 5)) {
 			vs_printf("flash enter xip mode\n");

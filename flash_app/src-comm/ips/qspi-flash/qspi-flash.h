@@ -290,7 +290,6 @@ struct qspi_flash_device {
 struct qspi_flash_operation {
 	u32 (*qspi_flash_erase)(void *dev, u32 addr, u32 len);
 	void (*qspi_flash_read)(void *dev, u32 src_addr, u8 *dest_buff, u32 len);
-	void (*qspi_flash_write_le)(void *dev, u8 *src_buff, u32 dest_addr, u32 len);
 	void (*qspi_flash_write)(void *dev, u8 *src_buff, u32 dest_addr, u32 len);
 	u32 (*qspi_flash_probe)(void *dev, u8 index);
 	void (*qspi_flash_read_id)(void *dev);

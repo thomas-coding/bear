@@ -244,7 +244,7 @@ u32 flash_erase(struct qspi_flash_device *dev, u32 addr, u32 len)
 		flash_write_disable(dev);
 
 		n_sector--;
-		flash_offset += 4096;
+		flash_offset +=4096;
 	}
 }
 
@@ -315,78 +315,6 @@ void flash_write(struct qspi_flash_device *dev, u8 *src_buff,
 
 }
 
-struct qspi_config flash_write_le_config = {
-	.divide		= QSPI_DFAULT_DIV,
-	.config0	= DATA_SHIFT_WIDTH_SET(8) | \
-			  STD_SEL_STANDARD_SPI | TRAN_DIR_TX,
-	.config1	= CMD_FORMAT_0 | TRAN_FRM_INST_ADDR_DATA,
-	.config2	= TX_INST_NUM_SET(8) | TX_ADDR_NUM_SET(24),
-	.instruction	= FLASH_CMD_PP,
-};
-
-/* Write 16bytes once */
-uint32_t internel_flash_write_le(uint8_t *buffer, uint32_t len)
-{
-	uint32_t count = 0;
-
-
-	qspi_enable_with_cs_assert();
-
-	/* Write data to QSPI. Polling method, each time write QSPI_USOD_FIFO_DEPTH */
-	for (uint32_t i = 0; i < 4; i++) {
-		while (((read_mreg32(QSPI_REG_BASE + FIFO_NUM) >> 16) & 0x1FF) == QSPI_USOD_FIFO_DEPTH) {
-			;/* FIFO_NUM, wait for TX FIFO availeble. */
-		}
-
-		/* change to little endian */
-		write_mreg32(QSPI_REG_BASE + TX_DAT, buffer[4 * i + 3]);
-		write_mreg32(QSPI_REG_BASE + TX_DAT, buffer[4 * i + 2]);
-		write_mreg32(QSPI_REG_BASE + TX_DAT, buffer[4 * i + 1]);
-		write_mreg32(QSPI_REG_BASE + TX_DAT, buffer[4 * i + 0]);
-	}
-
-	/* wait qspi transation complete */
-	udelay(10);
-	qspi_disable_with_cs_deassert();
-
-	/* wait flash internel write complete */
-	udelay(10);
-	flash_wait_complete();
-
-	return count;
-}
-
-void flash_write_le(struct qspi_flash_device *dev, u8 *src_buff,
-		    u32 dest_addr, u32 write_len)
-{
-	uint32_t n_write, flash_offset, once_write_len, src_offset;
-
-	flash_offset = dest_addr - dev->flash_base;
-	src_offset = 0;
-	while (write_len) {
-
-		if (write_len > TRANSATION_MAX_BYTES)
-			once_write_len = TRANSATION_MAX_BYTES;
-		else
-			once_write_len = write_len;
-
-		/* write bytes */
-		flash_write_config.address = flash_offset;
-		flash_write_enable(dev);
-		qspi_disable_with_cs_deassert();
-		qspi_set_config(&flash_write_config);
-		internel_flash_write_le(src_buff + src_offset, once_write_len);
-		flash_write_disable(dev);
-
-		/* update position */
-		write_len -= once_write_len;
-		flash_offset += once_write_len;
-		src_offset += once_write_len;
-
-	}
-
-}
-
 struct qspi_config flash_xip_enter_config = {
 	.divide		= QSPI_DFAULT_DIV,
 	.config0	= DATA_SHIFT_WIDTH_SET(32) | \
@@ -431,8 +359,7 @@ void flash_xip_enter(struct qspi_flash_device *dev)
 
 	/* Check FIFO_NUM, until have data in RX FIFO */
 	while ((read_mreg32(QSPI_REG_BASE + FIFO_NUM) & 0x1FF) == 0x00);
-	value = read_mreg32(QSPI_REG_BASE + RX_DAT);
-	//vs_printf("flash value 0x10000000: 0x%x\n", value);
+	read_mreg32(QSPI_REG_BASE + RX_DAT);
 
 	mdelay(1);
 
@@ -482,9 +409,8 @@ void flash_xip_exit(struct qspi_flash_device *dev)
 
 struct qspi_flash_operation qspi_flash_ops = {
 	.qspi_flash_erase	= (u32 (*)(void *,			u32,			  u32)) flash_erase,
-	.qspi_flash_read	= (void (*)(void *,			u32,			  u8 *,					 u32)) flash_read,
-	.qspi_flash_write_le	= (void (*)(void *,			u8 *,			  u32,					 u32)) flash_write_le,
-	.qspi_flash_write	= (void (*)(void *,			u8 *,			  u32,					 u32)) flash_write,
+	.qspi_flash_read	= (void (*)(void *,			u32,			  u8 *,		     u32)) flash_read,
+	.qspi_flash_write	= (void (*)(void *,			u8 *,			  u32,		     u32)) flash_write,
 	.qspi_flash_read_id	= (void (*)(void *)) qspi_flash_read_id,
 	.qspi_flash_write_en	= (void (*)(void *)) flash_write_enable,
 	.qspi_flash_write_dis	= (void (*)(void *)) flash_write_disable,

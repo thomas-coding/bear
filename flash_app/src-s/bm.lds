@@ -3,16 +3,28 @@
  */
 
 /* Secure sram 128K */
-/* If enable mbedtls, need more code size */
 CONFIG_SRAM_S_BASE = 0x20200000;
 CONFIG_SRAM_S_SIZE = 0x20000;
 
+/* Non-secure sram 128K */
+CONFIG_SRAM_NS_BASE = 0x20400000;
+CONFIG_SRAM_NS_SIZE = 0x20000;
+
+/* Secure Flash 128K */
+CONFIG_FLASH_S_BASE = 0x10000000;
+CONFIG_FLASH_S_SIZE = 0x20000;
+
+/* Non-secure Flash 128K */
+CONFIG_SRAM_NS_BASE = 0x10200000;
+CONFIG_SRAM_NS_SIZE = 0x20000;
 
 /* Non-Secure Callable Configuration */
 __SG_SIZE = 0x800;
 __SG_BASE = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE - __SG_SIZE - 0x40);
 
 /* Embedded RAM Configuration */
+__FLASH_BASE = CONFIG_FLASH_S_BASE;
+__FLASH_SIZE = CONFIG_FLASH_S_SIZE;
 __RAM_BASE = CONFIG_SRAM_S_BASE;
 __RAM_SIZE = (CONFIG_SRAM_S_SIZE - __SG_SIZE - 0x40);
 
@@ -26,6 +38,7 @@ __HEAP_SIZE  = 0x00000C00;
 
 MEMORY
 {
+	FLASH (rx) : ORIGIN = __FLASH_BASE, LENGTH = __FLASH_SIZE
 	RAM (rwx) : ORIGIN = __RAM_BASE, LENGTH = __RAM_SIZE
 	SG_veneer_table (rx) : ORIGIN = __SG_BASE, LENGTH = __SG_SIZE
 }
@@ -69,18 +82,18 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
-	} > RAM
+	} > FLASH
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > RAM
+	} > FLASH
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > RAM
+	} > FLASH
 	__exidx_end = .;
 
 	.zero.table :
@@ -88,11 +101,15 @@ SECTIONS
 		. = ALIGN(4);
 		__zero_table_start__ = .;
 		__zero_table_end__ = .;
-	} > RAM
+	} > FLASH
+
+	. = ALIGN(4);
+    __etext = .;
 
 	.data :
 	{
 		. = ALIGN(4);
+        __data_start__ = . ;
 		*(vtable)
 		*(.data)
 		*(.data.*)
@@ -118,9 +135,10 @@ SECTIONS
 		PROVIDE_HIDDEN (__fini_array_end = .);
 
 		KEEP(*(.jcr*))
-		. = ALIGN(4);
+		. = ALIGN(4);	
+        __data_end__ = . ;
 		/* All data end */
-	} > RAM
+	} > RAM AT > FLASH
 
 	.bss :
 	{
