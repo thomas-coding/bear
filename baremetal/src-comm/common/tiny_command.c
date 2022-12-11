@@ -29,39 +29,76 @@ static int do_help(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_flash(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_boot_app(struct tiny_cmd *cmd, int argc, char *argv[]);
 static int do_download_and_go(struct tiny_cmd *cmd, int argc, char *argv[]);
+static int do_jump_to_non_secure_world(struct tiny_cmd *cmd, int argc, char *argv[]);
 
 static int boot_app(uint32_t addr);
 
 /* Command table */
 struct tiny_cmd tc_cmd_tb[] = {
-	TINY_CMD("mw",											       3,										    4,								    do_mw,
+	TINY_CMD("mw",										   3,											      4,										   do_mw,
 		 "mw addr value [width]         - Memory Write One Unit in Width"),
-	TINY_CMD("mr",											       2,										    3,								    do_mr,
+	TINY_CMD("mr",										   2,											      3,										   do_mr,
 		 "mr addr [width]               - Memory Read One Unit in Width"),
-	TINY_CMD("md",											       3,										    3,								    do_md,
+	TINY_CMD("md",										   3,											      3,										   do_md,
 		 "md addr len                   - Memory Dump in words"),
-	TINY_CMD("cp",											       4,										    4,								    do_cp,
+	TINY_CMD("cp",										   4,											      4,										   do_cp,
 		 "cp dst src len                - Memory copy in bytes"),
-	TINY_CMD("cmp",											       4,										    4,								    do_cmp,
+	TINY_CMD("cmp",										   4,											      4,										   do_cmp,
 		 "cmp addr0 addr1 len           - Memory Compare"),
-	TINY_CMD("load",										       2,										    3,								    do_load,
+	TINY_CMD("load",									   2,											      3,										   do_load,
 		 "load addr [baudrate]          - UART(kermit) Load"),
-	TINY_CMD("flash",										       3,										    5,								    do_flash,
-		 "flash read/erase/write flash_addr len src  or flash xip enter/exit    		- flash ops"),
-	TINY_CMD("go",											       2,										    2,								    do_go,
+	TINY_CMD("flash",									   3,											      5,										   do_flash,
+		 "flash read/erase/write flash_addr len src  or flash xip enter/exit"),
+	TINY_CMD("go",										   2,											      2,										   do_go,
 		 "go addr                       - Jump to run"),
-	TINY_CMD("exit",										       1,										    1,								    do_exit,
+	TINY_CMD("exit",									   1,											      1,										   do_exit,
 		 "exit                          - Exit console"),
-	TINY_CMD("boot",										       2,										    2,								    do_boot_app,
-		 "boot addr                          - boot flash app from address"),
-	TINY_CMD("dgo",											       4,										    4,								    do_download_and_go,
-		 "dgo src dst size                          - download from sram(src) to flash(dst) and run"),
-	TINY_CMD("help",										       1,										    2,								    do_help,
+	TINY_CMD("boot",									   2,											      2,										   do_boot_app,
+		 "boot addr                     - boot flash app from address"),
+	TINY_CMD("dgo",										   4,											      4,										   do_download_and_go,
+		 "dgo src dst size              - download from sram(src) to flash(dst) and run"),
+	TINY_CMD("ns",										   1,											      1,										   do_jump_to_non_secure_world,
+		 "ns                            - jump to non-secure world"),
+	TINY_CMD("help",									   1,											      2,										   do_help,
 		 "help                          - Help information"),
 	/* Add new command implementation here */
 };
 
 #define TC_CMD_TB_LEN   ARRAY_SIZE(tc_cmd_tb)
+
+void idau_config(void)
+{
+	/* Setting SAU_CTRL.ALLNS to 1 allows the security attribution
+	 * of all addresses to be set by the IDAU in the system. */
+	write_mreg32(0xE000E000UL + 0x0DD0UL, 0x2);
+
+	/* 126k secure/ 2k nsc/ other non-secure */
+	write_mreg32(SYSREG2_IDAU_CTRL, 0x1);
+	write_mreg32(SYSREG2_SRAM_SEC_SIZE1, 0x7E);
+	write_mreg32(SYSREG2_SRAM_SEC_SIZE2, 0x10);
+}
+
+int do_jump_to_non_secure_world(struct tiny_cmd *cmd, int argc, char *argv[])
+{
+	/* Config idau */
+	idau_config();
+
+	/* Set non-secure world vector base address */
+	*(volatile unsigned int *)0xe002ed08 = 0x20220000;
+
+	/* Set non-secure msp */
+	asm volatile ("ldr r0, =0x20220000");
+	asm volatile ("ldr r1, [r0]");
+	asm volatile ("msr msp_ns, r1");
+
+	/* Get non-secure entry */
+	asm volatile ("ldr r0, =0x20220004");
+	asm volatile ("ldr r1, [r0]");
+
+	/* Bit0 set to 0, indicate enter non-secure state*/
+	asm volatile ("bic r1,r1,#0x1");
+	asm volatile ("bxns r1");
+}
 
 /* down load image to flash and go
  * src - sram address
