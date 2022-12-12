@@ -61,7 +61,7 @@ endif()
 add_executable(${TARGET}.elf "")
 
 target_link_options(${TARGET}.elf PRIVATE -T ${CMAKE_HOME_DIRECTORY}/src-s/bm.lds
-    -Wl,-Map=linkmap.txt,--build-id=none  -nostartfiles)
+    -Wl,-Map=linkmap.txt,--build-id=none  -Wl,--print-memory-usage -nostartfiles)
 
 target_include_directories(${TARGET}.elf PUBLIC
     .
@@ -129,7 +129,7 @@ set(NS_SRC_LIST
 add_executable(${TARGET_NS}.elf "")
 
 target_link_options(${TARGET_NS}.elf PRIVATE -T ${CMAKE_HOME_DIRECTORY}/src-ns/bm.lds
-    -Wl,-Map=linkmap.txt,--build-id=none  -nostartfiles)
+    -Wl,-Map=linkmap.txt,--build-id=none  -Wl,--print-memory-usage -nostartfiles)
 
 target_include_directories(${TARGET_NS}.elf PUBLIC
     .
