@@ -10,14 +10,14 @@ CONFIG_SRAM_S_SIZE = 0x20000;
 
 /* Non-Secure Callable Configuration */
 __SG_SIZE = 0x800;
-__SG_BASE = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE - __SG_SIZE - 0x40);
+__SG_BASE = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE - __SG_SIZE);
 
 /* Embedded RAM Configuration */
 __RAM_BASE = CONFIG_SRAM_S_BASE;
-__RAM_SIZE = (CONFIG_SRAM_S_SIZE - __SG_SIZE - 0x40);
+__RAM_SIZE = (CONFIG_SRAM_S_SIZE - __SG_SIZE);
 
 /* Address used for determine whether the firmware is loaded by bm-loader */
-__DETERMINE_ADDR = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE - 0x40);
+__DETERMINE_ADDR = (CONFIG_SRAM_S_BASE + CONFIG_SRAM_S_SIZE);
 
 /* Stack / Heap Configuration */
 __STACK_SIZE = 0x00002000;

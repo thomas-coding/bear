@@ -15,6 +15,8 @@
 #include "board-stop.h"
 #include "board-reset.h"
 
+#include "call_secure.h"
+
 #ifdef INCLUDE_MBEDTLS
 #include "t-mbedtls.h"
 #endif
@@ -29,6 +31,7 @@ void *verify_callback[][2] = {
 	{ (void *)qspi_bm_flash_test, "NS qspi baremetal flash test"								      },
 	{ (void *)qspi_flash_test,    "NS qspi flash test"									      },
 	{ (void *)crypto_bm_test,     "NS crypto baremeatl test"									      },
+	{ (void *)non_secure_call_secure,     "NS call secure function test"									      },
 #ifdef INCLUDE_MBEDTLS
 	{ (void *)mbedtls_test,	      "NS mbedtls test"										      },
 #endif
@@ -44,7 +47,7 @@ void board_init(void)
 
 	console_init();
 }
-
+#include "veneers.h"
 /* Secure main() */
 int main(void)
 {
@@ -52,7 +55,6 @@ int main(void)
 	//secure_MPU_init();
 	/* Some config maybe only can access by secure */
 	//board_init();
-
 	vs_printf("\nBare-metal Non secure world test begin ...\n");
 
 	vs_verify_loop();
